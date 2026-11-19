@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>想象 · 远眺姿势图版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 研究工作台，简洁克制
+   IDEA: 瓦尔堡的黑色图版 + 一张可切换的图谱
+   PICTURE: 黑板（图像/骨架）与图谱（网络/坐标/散点）
+   COLOUR and TYPE: 纸灰底、墨黑板、暗红强调；Noto Serif SC
+   LAYOUT: 一句话 → 图版 → 图谱 + 标注卡 → 折叠的数据与方法 */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#141311);--ink:light-dark(#1b1a18,#ebe8e2);--soft:light-dark(#5b5852,#a9a49b);--panel:#0e0d0c;--rule:light-dark(#d9d9d9,#36322e);--card:light-dark(#ffffff,#1d1b19);--red:light-dark(#4a90e2,#6fa8ec);--sk:#4a90e2}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.75 "Courier Prime","Noto Serif SC",monospace;overflow-x:clip}
+.band{padding:clamp(22px,3.5vw,44px) max(5vw,16px) 0;max-width:1240px;margin:0 auto}
+.de{font-family:"Courier Prime","Noto Serif SC",monospace;font-style:italic}
+h1{font:700 clamp(28px,4vw,40px)/1.2 "Courier Prime","Noto Serif SC",monospace;margin:0 0 .35em;text-wrap:balance}
+h2{font:700 21px/1.3 "Courier Prime","Noto Serif SC",monospace;margin:0 0 .5em}
+.lead{max-width:820px;margin:0;font-size:16.5px}
+.lead strong{color:var(--red)}
+.m{color:var(--soft);font-size:14px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px}
+.bar button{font:700 14px "Courier Prime","Noto Serif SC",monospace;min-height:44px;padding:0 12px;border:1px solid var(--rule);background:var(--card);color:var(--ink);cursor:pointer}
+.bar button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.board{background:var(--panel);padding:clamp(8px,1.4vw,18px);display:grid;gap:clamp(6px,.9vw,10px);grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:180px 180px 180px 140px 140px;
+ grid-template-areas:"s7 s7 s1 s2 s9 s9" "s7 s7 s3 s4 s9 s9" "s8 s8 s5 s6 s10 s10" "s11 s11 s12 s13 s14 s14" "s11 s11 s15 s15 s16 s16"}
+.slot{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
+.slot img,.slot svg{max-width:100%;max-height:100%;display:block}
+.slot .ov,.slot svg{display:none}
+.board[data-m=ov] .ph{display:none}.board[data-m=ov] .ov{display:block;width:100%;height:100%}
+.board[data-m=sk] .ph{display:none}.board[data-m=sk] svg:not(.ov){display:block;width:100%;height:100%}
+.slot b{position:absolute;left:4px;top:3px;font:700 12px/1 "Courier Prime","Noto Serif SC",monospace;color:#fff;background:#0e0d0cd0;padding:3px 5px}
+.slot.core{outline:1px solid #8a7f6e;outline-offset:3px}
+.view{position:relative;background:var(--card);border:1px solid var(--rule)}
+.net{height:860px}.net svg,.sc svg{position:absolute;inset:0;width:100%;height:100%}
+.sc{height:460px}
+.legend2{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;margin:0 0 8px}
+.legend2 label{display:flex;align-items:center;gap:6px;min-height:40px;cursor:pointer}
+.legend2 i{display:inline-block;width:24px;border-top:3px solid}
+.keys{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--soft);margin:-2px 0 8px}
+.keys span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--c);margin-right:5px}
+.grid-map{display:grid;grid-template-columns:128px repeat(4,minmax(0,1fr));gap:5px;font-size:14px;padding:8px}
+.grid-map .hd{font-weight:600;padding:4px;border-bottom:2px solid var(--ink)}
+.grid-map .rh{font-weight:600;padding:6px 4px;border-right:2px solid var(--ink)}
+.grid-map .rh small{display:block;font-weight:400;color:var(--soft);font-size:12px}
+.grid-map .cell{border:1px solid var(--rule);min-height:84px;padding:5px;display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;background:var(--bg)}
+.grid-map .cell.empty{border-style:dashed;background:transparent}
+.chip{display:flex;text-align:left;align-items:center;gap:4px;background:var(--card);border:1px solid var(--rule);padding:2px 6px 2px 2px;cursor:pointer;font:13px "Courier Prime","Noto Serif SC",monospace;color:var(--ink);min-height:44px}
+.chip img{width:36px;height:36px;object-fit:cover}.chip b{color:var(--red)}.chip.on{outline:2px solid var(--red)}
+.card{background:var(--card);border:1px solid var(--rule);border-top:3px solid var(--red);padding:14px 18px;margin-top:12px}
+.card h3{font:700 18px/1.35 "Courier Prime","Noto Serif SC",monospace;margin:0}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px 22px;margin-top:8px;font-size:14.5px}
+.cols h4{font:700 13px "Courier Prime","Noto Serif SC",monospace;color:var(--red);margin:0 0 2px}
+.cols p{margin:0 0 3px}
+.dash{border-bottom:1px dashed var(--soft)}
+details{margin:28px 0 40px;border-top:1px solid var(--rule);padding-top:6px}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border-bottom:1px solid var(--rule);padding:5px 7px;text-align:right;white-space:nowrap}
+th:nth-child(-n+2),td:nth-child(-n+2){text-align:left;white-space:normal}
+.scroll{overflow-x:auto}
+@media(max-width:760px){.board{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:170px;grid-template-areas:none}.board .slot{grid-area:auto!important}.net{height:620px}.grid-map{grid-template-columns:84px repeat(4,minmax(0,1fr));font-size:12.5px}.chip span{display:none}}
+.wrap{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:24px;align-items:start}
+.bar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+#emb .btn{font:700 14px "Courier Prime","Noto Serif SC",monospace;min-height:44px;padding:0 13px;border:1px solid var(--rule);background:var(--card);color:var(--ink);cursor:pointer}
+label.btn:focus-within{outline:2px solid var(--red);outline-offset:2px}
+.stage{background:var(--panel);position:relative;aspect-ratio:3/4;touch-action:none}
+.stage svg,.stage canvas{position:absolute;inset:0;width:100%;height:100%}
+.stage canvas{object-fit:contain}
+.joint{cursor:grab}
+.status{font-size:14px;color:var(--soft);min-height:1.6em;margin:6px 0}
+#camok{background:#4a90e2!important;color:#fff!important;border-color:#4a90e2!important}
+.near{font:700 16px/1.4 "Courier Prime","Noto Serif SC",monospace;margin:4px 0 12px}
+.me{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center;background:var(--card);border:1px solid var(--rule);border-top:3px solid var(--red);padding:10px 14px;margin-bottom:12px}
+.me svg{width:96px;height:110px;background:var(--panel)}
+.me strong{font-size:17px}
+.res{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px}
+.r{background:var(--card);border:1px solid var(--rule);display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;padding:8px}
+.r .pic{position:relative;background:var(--panel);height:120px;display:flex;align-items:center;justify-content:center}
+.r .pic img{max-width:100%;max-height:100%}
+.r .pic svg{position:absolute;right:2px;bottom:2px;width:34px;height:42px;background:#0e0d0ccc}
+.r h3{font:700 15px/1.35 "Courier Prime","Noto Serif SC",monospace;margin:0}
+.r h3 b{color:var(--red)}
+.r p{margin:2px 0;font-size:13.5px}
+.meter{height:5px;background:var(--rule);margin:4px 0}.meter i{display:block;height:100%;background:var(--red)}
+.r .use{font:13px "Courier Prime","Noto Serif SC",monospace;min-height:36px;margin-top:4px;padding:0 8px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);cursor:pointer}
+input[type=file]{position:absolute;opacity:0;width:1px;height:1px}
+@media(max-width:820px){.wrap{grid-template-columns:1fr}.stage{max-width:420px}}
+.lang{position:absolute;top:clamp(14px,2.4vw,26px);right:max(5vw,16px);display:flex;gap:2px;font:700 13px "Courier Prime","Noto Serif SC",monospace}.lang a{display:inline-flex;align-items:center;min-height:36px;padding:0 10px;border:1px solid var(--rule);color:var(--ink);text-decoration:none}.lang a[aria-current]{background:var(--ink);color:var(--bg);border-color:var(--ink)}header.band{position:relative}h1{padding-right:120px}
+input[type=checkbox]{accent-color:#4a90e2}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+</head>
+<body>
+<header class="band">
+  <nav class="lang" aria-label="语言 / Language"><a href="index.html" lang="zh-CN" aria-current="page">中文</a><a href="en.html" lang="en">EN</a></nav>
+  <h1>想象的身体：远眺与不可见之物</h1>
+  <p class="lead">想象即看见不可见之物。这里比较 16 个“看见”的人物的姿势，核心是远眺（<span class="de">aposkopein</span>）：手举到额前遮光。<strong>初步发现：</strong>纯程式（萨提尔、伦勃朗）与异象场景中的目击者（利奥修士、牧人、使徒）骨架几乎相同，肘角 41–66°、手在眉上；“看见了什么”只能由图像学语境给出。</p>
+  <p class="m">16 个人物 · 人工标注一次 · 初步结果 · 页面下方可用身体检索</p>
+</header>
+
+<section class="band">
+  <div class="bar" role="group" aria-label="图版显示"><button data-m="ph" aria-pressed="true">图像</button><button data-m="ov" aria-pressed="false">骨架叠加</button><button data-m="sk" aria-pressed="false">只看骨架</button></div>
+  <div class="board" id="board" data-m="ph" aria-label="16 个人物的姿势图版"></div>
+  <p class="m">中间六格：远眺 · 左上：被光击中 · 右上：出神与报喜 · 左下：以手托头 · 右下：手离开眼睛。点任意一格看标注卡。“只看骨架”中，绿点为举起手臂的一侧，蓝点为另一侧；骨架已统一扶正（脊柱竖直，举起的手臂在左）。</p>
+</section>
+
+<section class="band">
+  <div class="bar" role="group" aria-label="图谱"><button data-v="net" aria-pressed="true">网络图</button><button data-v="grid" aria-pressed="false">坐标图</button><button data-v="sc" aria-pressed="false">姿势散点</button></div>
+  <div id="p-net"><div class="legend2" id="edgeLegend"></div><div class="keys" id="ctxKeys"></div><div class="view net"><svg id="net" role="img" aria-label="作品关联网络"></svg></div><p class="m">点任意标签，看它连着哪些作品、为什么相连。</p></div>
+  <div id="p-grid" hidden><div class="view"><div class="grid-map" id="gridmap"></div></div><p class="m">横轴：测得的手眼关系。纵轴：不可见之物如何到达人（前三行依奥古斯丁三种“看”改写，后两行为本研究补充）。“不可显现”一行为空：理智之见不借形象，画不出来。</p></div>
+  <div id="p-sc" hidden><div class="view sc"><svg id="chart" role="img" aria-label="肘角与手眼距离散点图"></svg></div><p class="m">红区：远眺。绿区：以手托头——手同样贴着脸，但肘角更小、手在眼下。</p></div>
+  <div class="card" id="card"></div>
+</section>
+
+<section class="band" id="emb">
+  <h2>用身体检索</h2>
+  <p class="m" style="max-width:780px;margin:-4px 0 12px">把身体当作检索词：摆一个“看”的姿势，档案按骨架相似度回应——哪些画中人这样看过，他们看见的是什么。档案一侧用人工标注；照片由浏览器里的 MoveNet 识别，只在本地处理，不上传。</p>
+
+<div class="wrap">
+  <div>
+    <div class="bar" role="group" aria-label="输入方式"><button data-in="doll" aria-pressed="true">拖动木偶</button><label class="btn" style="display:flex;align-items:center">拍照或上传<input type="file" id="file" accept="image/*" capture="user"></label><button id="camok" hidden>确认这个姿势</button><button id="cam" aria-pressed="false">打开摄像头</button></div>
+    <div class="bar" role="group" aria-label="预设姿势" id="presets"></div>
+    <div class="stage" id="stage"><canvas id="photo" hidden></canvas><svg id="doll" viewBox="0 0 300 400" aria-label="可拖动的木偶"></svg></div>
+    <p class="status" id="status">拖动关节摆出姿势，结果会即时更新。</p>
+  </div>
+  <div>
+    <h3 class="near">与你的姿势更相近的作品</h3>
+    <div class="me" id="me"></div>
+    <div class="res" id="res"></div>
+  </div>
+</div>
+</section>
+<section class="band">
+<details><summary>数据与方法</summary>
+  <p class="m">骨架沿用 Impett 与 Moretti（斯坦福小册子 16 号）：12 段线段、11 个角度，脊柱扶正、举起的手臂镜像到左。另加四项特征：手眼距离（腕到眼 ÷ 臂长）、肘角、上臂抬高、手腕高出眼睛（臂长倍数）。关键点为单人一次手工标注，图片为屏幕截取；语境事实未逐条附出版物出处。图片来源见各作品链接；7 号照片 Alvesgaspar、8 号 Armin Kleiner（CC BY-SA 4.0），1 号为大都会艺术博物馆图片。</p>
+  <div class="scroll"><table id="tbl"></table></div>
+  <div class="scroll" style="margin-top:14px"><table id="tbl2"></table></div>
+</details>
+</section>
+<script>
+{
+const ROWS=[{"k": "a1_bronze_satyr", "fig": "萨提尔", "vec": {"neck": 350.2063193233792, "sho_A": 269.23548754563785, "sho_B": 89.23548754563785, "uarm_A": 263.6729196889783, "uarm_B": null, "farm_A": 31.121225886526986, "farm_B": null, "thigh_A": 190.9004079154293, "thigh_B": 168.90927799825215, "calf_A": 181.43808570740367, "calf_B": 190.9004079154293}, "mirror": false, "spine_tilt": 1, "hand_eye": 0.214, "arm_elev": 83.673, "elbow": 52.552, "head_tilt": 9.794, "wrist_above_eye": 0.109}, {"k": "01_rembrandt_old_man", "fig": "老人（半身）", "vec": {"neck": 7.8119317102681975, "sho_A": 275.38370167681177, "sho_B": 95.38370167681177, "uarm_A": 258.8112000717482, "uarm_B": null, "farm_A": 34.90741962583979, "farm_B": null, "thigh_A": null, "thigh_B": null, "calf_A": null, "calf_B": null}, "mirror": true, "spine_tilt": null, "hand_eye": 0.262, "arm_elev": 78.811, "elbow": 43.904, "head_tilt": 7.812, "wrist_above_eye": 0.029}, {"k": "06b_transfig_apostles", "fig": "山顶右侧的使徒", "vec": {"neck": 348.0250391000897, "sho_A": 257.14633837217804, "sho_B": 77.14633837217804, "uarm_A": 303.181691558723, "uarm_B": 109.92636896695872, "farm_A": 57.1327715769579, "farm_B": 79.17725260903114, "thigh_A": 248.17371175728164, "thigh_B": null, "calf_A": null, "calf_B": null}, "mirror": false, "spine_tilt": 3, "hand_eye": 0.395, "arm_elev": 123.182, "elbow": 66.049, "head_tilt": 11.975, "wrist_above_eye": 0.069}, {"k": "05_caravaggio_paul", "fig": "保罗", "vec": {"neck": 310.92377556548905, "sho_A": 356.38548980141724, "sho_B": 176.38548980141724, "uarm_A": 51.70637371548378, "uarm_B": 125.76901143474288, "farm_A": 61.46940715750395, "farm_B": 102.38379037752912, "thigh_A": null, "thigh_B": 133.40968981312363, "calf_A": null, "calf_B": 218.9488415546071}, "mirror": true, "spine_tilt": 84, "hand_eye": 1.35, "arm_elev": 128.294, "elbow": 170.237, "head_tilt": 49.076, "wrist_above_eye": 0.82}, {"k": "07_bernini_teresa", "fig": "特雷莎", "vec": {"neck": 6.873101952523541, "sho_A": 273.4779841302923, "sho_B": 93.47798413029233, "uarm_A": 170.29529874950555, "uarm_B": null, "farm_A": 194.62087398863164, "farm_B": null, "thigh_A": null, "thigh_B": 149.62087398863164, "calf_A": null, "calf_B": 204.08319619665727}, "mirror": true, "spine_tilt": 15, "hand_eye": 1.497, "arm_elev": 9.705, "elbow": 155.674, "head_tilt": 6.873, "wrist_above_eye": -1.464}, {"k": "08_botticelli_annunciation", "fig": "马利亚", "vec": {"neck": 18.226886842709064, "sho_A": 270.677193334143, "sho_B": 90.677193334143, "uarm_A": 189.2413463204384, "uarm_B": 139.52783215805374, "farm_A": 66.99026084683982, "farm_B": 122.75212077087289, "thigh_A": 190.3838457434827, "thigh_B": 150.96013902846263, "calf_A": 145.3192507544879, "calf_B": 151.35900006599942}, "mirror": true, "spine_tilt": 11, "hand_eye": 1.141, "arm_elev": 9.241, "elbow": 57.749, "head_tilt": 18.227, "wrist_above_eye": -1.101}, {"k": "09_piero_constantine", "fig": "床边的侍从（醒着）", "vec": {"neck": 335.83038755527264, "sho_A": 265.45264369392345, "sho_B": 85.45264369392345, "uarm_A": 240.5860494445575, "uarm_B": 163.56776032847893, "farm_A": 41.738368026282274, "farm_B": 255.49312169978657, "thigh_A": 229.2234069766556, "thigh_B": 158.47293284933735, "calf_A": 198.38797224461553, "calf_B": 190.66261206786126}, "mirror": true, "spine_tilt": 1, "hand_eye": 0.163, "arm_elev": 60.586, "elbow": 18.848, "head_tilt": 24.17, "wrist_above_eye": -0.035}, {"k": "10_ribera_jacob", "fig": "雅各", "vec": {"neck": 350.31584789562186, "sho_A": 324.1848473506833, "sho_B": 144.1848473506833, "uarm_A": 270.72355920811196, "uarm_B": 233.75079671854388, "farm_A": 61.466053533988884, "farm_B": 291.2796044276954, "thigh_A": 192.306977812799, "thigh_B": 171.5347231307532, "calf_A": 176.83564964727887, "calf_B": 166.1454113707798}, "mirror": true, "spine_tilt": 66, "hand_eye": 0.213, "arm_elev": 90.724, "elbow": 29.258, "head_tilt": 9.684, "wrist_above_eye": 0.023}, {"k": "11_caravaggio_thomas", "fig": "多马", "vec": {"neck": 287.76648197022087, "sho_A": 265.1802478808772, "sho_B": 85.18024788087718, "uarm_A": 256.024499450756, "uarm_B": 153.5849374319095, "farm_A": 291.31124842581573, "farm_B": 227.08057605015446, "thigh_A": null, "thigh_B": null, "calf_A": null, "calf_B": null}, "mirror": false, "spine_tilt": 7, "hand_eye": 0.667, "arm_elev": 76.024, "elbow": 144.713, "head_tilt": 72.234, "wrist_above_eye": -0.408}, {"k": "12_titian_noli", "fig": "抹大拉的马利亚", "vec": {"neck": 23.105871080851273, "sho_A": 312.9047474353762, "sho_B": 132.90474743537618, "uarm_A": 262.71031852764133, "uarm_B": 226.71882226966653, "farm_A": 354.3284130603788, "farm_B": 217.19415429787654, "thigh_A": 256.59481496135595, "thigh_B": null, "calf_A": 130.92981342449423, "calf_B": null}, "mirror": false, "spine_tilt": 43, "hand_eye": 1.0, "arm_elev": 82.71, "elbow": 88.382, "head_tilt": 23.106, "wrist_above_eye": 0.044}, {"k": "14_durer_melencolia", "fig": "忧郁", "vec": {"neck": 8.87433598294507, "sho_A": 266.28100602684196, "sho_B": 86.28100602684196, "uarm_A": 153.94035806684784, "uarm_B": 167.80986139382713, "farm_A": 350.33414297286845, "farm_B": 139.8117716367901, "thigh_A": 158.2768444209286, "thigh_B": 102.90176294073405, "calf_A": 182.8437045357794, "calf_B": 188.28330092562567}, "mirror": true, "spine_tilt": 4, "hand_eye": 0.168, "arm_elev": 26.06, "elbow": 16.394, "head_tilt": 8.874, "wrist_above_eye": -0.143}, {"k": "15_bruegel_blind", "fig": "仰着脸的第三个盲人", "vec": {"neck": 11.3151008411225, "sho_A": 280.4855526371216, "sho_B": 100.4855526371216, "uarm_A": 226.17729698803734, "uarm_B": 159.72956066093198, "farm_A": 320.6481178235325, "farm_B": 188.8377723225037, "thigh_A": 220.87637047151165, "thigh_B": 196.43241569109512, "calf_A": 191.3899646219242, "calf_B": 206.44039549253642}, "mirror": true, "spine_tilt": 16, "hand_eye": 1.245, "arm_elev": 46.177, "elbow": 85.529, "head_tilt": 11.315, "wrist_above_eye": -0.441}, {"k": "v1_ghirlandaio_leo", "fig": "利奥修士", "vec": {"neck": 353.76714379640384, "sho_A": 265.50284838533224, "sho_B": 85.50284838533224, "uarm_A": 306.95416641142776, "uarm_B": 150.97937140821506, "farm_A": 75.19800191656617, "farm_B": 143.6026914675985, "thigh_A": 188.5900768091689, "thigh_B": 147.20209261932587, "calf_A": 227.4756176713587, "calf_B": 247.06789956241022}, "mirror": true, "spine_tilt": 23, "hand_eye": 0.254, "arm_elev": 126.954, "elbow": 51.756, "head_tilt": 6.233, "wrist_above_eye": 0.234}, {"k": "v2_veneziano_leo", "fig": "利奥修士", "vec": {"neck": 350.74535881242997, "sho_A": 261.74460248268724, "sho_B": 81.74460248268727, "uarm_A": 312.4551956201869, "uarm_B": 154.25660510653873, "farm_A": 67.47208909828693, "farm_B": 162.52377844204938, "thigh_A": 246.4176845947651, "thigh_B": 184.5802119690887, "calf_A": 244.25660510653873, "calf_B": 249.83289839151863}, "mirror": false, "spine_tilt": 3, "hand_eye": 0.137, "arm_elev": 132.455, "elbow": 64.983, "head_tilt": 9.255, "wrist_above_eye": 0.128}, {"k": "v3_bassano_shepherd", "fig": "左下角的牧人", "vec": {"neck": 346.93844891667186, "sho_A": 265.15599962491933, "sho_B": 85.15599962491933, "uarm_A": 272.2906100426385, "uarm_B": null, "farm_A": 51.423470436556556, "farm_B": null, "thigh_A": null, "thigh_B": null, "calf_A": null, "calf_B": null}, "mirror": true, "spine_tilt": null, "hand_eye": 0.152, "arm_elev": 92.291, "elbow": 40.867, "head_tilt": 13.062, "wrist_above_eye": 0.029}, {"k": "b2_gaddi_shepherd", "fig": "被光击倒的牧人", "vec": {"neck": 319.7190138532406, "sho_A": 241.41795146204325, "sho_B": 61.41795146204322, "uarm_A": 270.320308498245, "uarm_B": 77.8651457093506, "farm_A": 295.5008369686499, "farm_B": 177.03420651916974, "thigh_A": 186.77062654129284, "thigh_B": 198.91309653486894, "calf_A": 226.56726683839344, "calf_B": 232.29978126642953}, "mirror": true, "spine_tilt": 53, "hand_eye": 1.104, "arm_elev": 90.32, "elbow": 154.819, "head_tilt": 40.281, "wrist_above_eye": -0.145}], SK={"a1_bronze_satyr": {"w": 278, "h": 600, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.06, -1.345]], "sho_A": [[0.0, -1.0], [-0.32, -0.996]], "sho_B": [[0.0, -1.0], [0.32, -1.004]], "uarm_A": [[-0.32, -0.996], [-0.867, -0.935]], "farm_A": [[-0.867, -0.935], [-0.608, -1.363]], "thigh_A": [[0.0, 0.0], [-0.161, 0.835]], "thigh_B": [[0.0, 0.0], [0.164, 0.834]], "calf_A": [[-0.161, 0.835], [-0.182, 1.684]], "calf_B": [[0.164, 0.834], [0.003, 1.669]]}}, "01_rembrandt_old_man": {"w": 479, "h": 389, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [0.048, -1.347]], "sho_A": [[0.0, -1.0], [-0.319, -1.03]], "sho_B": [[0.0, -1.0], [0.319, -0.97]], "uarm_A": [[-0.319, -1.03], [-0.858, -0.923]], "farm_A": [[-0.858, -0.923], [-0.572, -1.333]]}}, "06b_transfig_apostles": {"w": 577, "h": 304, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.073, -1.342]], "sho_A": [[0.0, -1.0], [-0.312, -0.929]], "sho_B": [[0.0, -1.0], [0.312, -1.071]], "uarm_A": [[-0.312, -0.929], [-0.772, -1.23]], "uarm_B": [[0.312, -1.071], [0.829, -0.884]], "farm_A": [[-0.772, -1.23], [-0.352, -1.501]], "farm_B": [[0.829, -0.884], [1.32, -0.978]], "thigh_A": [[0.0, 0.0], [-0.789, 0.316]]}}, "05_caravaggio_paul": {"w": 458, "h": 600, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.264, -1.229]], "sho_A": [[0.0, -1.0], [-0.02, -1.319]], "sho_B": [[0.0, -1.0], [0.02, -0.681]], "uarm_A": [[-0.02, -1.319], [0.411, -1.66]], "uarm_B": [[0.02, -0.681], [0.466, -0.359]], "farm_A": [[0.411, -1.66], [0.851, -1.899]], "farm_B": [[0.466, -0.359], [0.955, -0.252]], "thigh_B": [[0.0, 0.0], [0.617, 0.584]], "calf_B": [[0.617, 0.584], [0.083, 1.245]]}}, "07_bernini_teresa": {"w": 477, "h": 600, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [0.042, -1.347]], "sho_A": [[0.0, -1.0], [-0.319, -1.019]], "sho_B": [[0.0, -1.0], [0.319, -0.981]], "uarm_A": [[-0.319, -1.019], [-0.227, -0.477]], "farm_A": [[-0.227, -0.477], [-0.353, 0.007]], "thigh_B": [[0.0, 0.0], [0.43, 0.733]], "calf_B": [[0.43, 0.733], [0.083, 1.509]]}}, "08_botticelli_annunciation": {"w": 318, "h": 581, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [0.109, -1.332]], "sho_A": [[0.0, -1.0], [-0.32, -1.004]], "sho_B": [[0.0, -1.0], [0.32, -0.996]], "uarm_A": [[-0.32, -1.004], [-0.408, -0.461]], "uarm_B": [[0.32, -0.996], [0.677, -0.578]], "farm_A": [[-0.408, -0.461], [0.052, -0.656]], "farm_B": [[0.677, -0.578], [1.097, -0.307]], "thigh_A": [[0.0, 0.0], [-0.153, 0.836]], "thigh_B": [[0.0, 0.0], [0.413, 0.743]], "calf_A": [[-0.153, 0.836], [0.33, 1.535]], "calf_B": [[0.413, 0.743], [0.82, 1.489]]}}, "09_piero_constantine": {"w": 218, "h": 253, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.143, -1.319]], "sho_A": [[0.0, -1.0], [-0.319, -0.975]], "sho_B": [[0.0, -1.0], [0.319, -1.025]], "uarm_A": [[-0.319, -0.975], [-0.798, -0.705]], "uarm_B": [[0.319, -1.025], [0.475, -0.498]], "farm_A": [[-0.798, -0.705], [-0.465, -1.078]], "farm_B": [[0.475, -0.498], [-0.009, -0.373]], "thigh_A": [[0.0, 0.0], [-0.644, 0.555]], "thigh_B": [[0.0, 0.0], [0.312, 0.791]], "calf_A": [[-0.644, 0.555], [-0.912, 1.362]], "calf_B": [[0.312, 0.791], [0.155, 1.626]]}}, "10_ribera_jacob": {"w": 718, "h": 413, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.059, -1.345]], "sho_A": [[0.0, -1.0], [-0.187, -1.259]], "sho_B": [[0.0, -1.0], [0.187, -0.741]], "uarm_A": [[-0.187, -1.259], [-0.737, -1.266]], "uarm_B": [[0.187, -0.741], [-0.256, -0.415]], "farm_A": [[-0.737, -1.266], [-0.298, -1.505]], "farm_B": [[-0.256, -0.415], [-0.722, -0.597]], "thigh_A": [[0.0, 0.0], [-0.181, 0.83]], "thigh_B": [[0.0, 0.0], [0.125, 0.841]], "calf_A": [[-0.181, 0.83], [-0.134, 1.679]], "calf_B": [[0.125, 0.841], [0.329, 1.666]]}}, "11_caravaggio_thomas": {"w": 800, "h": 594, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.333, -1.107]], "sho_A": [[0.0, -1.0], [-0.319, -0.973]], "sho_B": [[0.0, -1.0], [0.319, -1.027]], "uarm_A": [[-0.319, -0.973], [-0.853, -0.84]], "uarm_B": [[0.319, -1.027], [0.564, -0.534]], "farm_A": [[-0.853, -0.84], [-1.318, -1.022]], "farm_B": [[0.564, -0.534], [0.197, -0.194]]}}, "12_titian_noli": {"w": 393, "h": 301, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [0.137, -1.322]], "sho_A": [[0.0, -1.0], [-0.234, -1.218]], "sho_B": [[0.0, -1.0], [0.234, -0.782]], "uarm_A": [[-0.234, -1.218], [-0.78, -1.148]], "uarm_B": [[0.234, -0.782], [-0.166, -0.405]], "farm_A": [[-0.78, -1.148], [-0.829, -1.646]], "farm_B": [[-0.166, -0.405], [-0.468, -0.007]], "thigh_A": [[0.0, 0.0], [-0.827, 0.197]], "calf_A": [[-0.827, 0.197], [-0.185, 0.754]]}}, "14_durer_melencolia": {"w": 267, "h": 466, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [0.054, -1.346]], "sho_A": [[0.0, -1.0], [-0.319, -0.979]], "sho_B": [[0.0, -1.0], [0.319, -1.021]], "uarm_A": [[-0.319, -0.979], [-0.078, -0.485]], "uarm_B": [[0.319, -1.021], [0.435, -0.483]], "farm_A": [[-0.078, -0.485], [-0.162, -0.978]], "farm_B": [[0.435, -0.483], [0.758, -0.101]], "thigh_A": [[0.0, 0.0], [0.315, 0.79]], "thigh_B": [[0.0, 0.0], [0.829, 0.19]], "calf_A": [[0.315, 0.79], [0.272, 1.639]], "calf_B": [[0.829, 0.19], [0.706, 1.031]]}}, "15_bruegel_blind": {"w": 343, "h": 431, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [0.069, -1.343]], "sho_A": [[0.0, -1.0], [-0.315, -1.058]], "sho_B": [[0.0, -1.0], [0.315, -0.942]], "uarm_A": [[-0.315, -1.058], [-0.711, -0.677]], "uarm_B": [[0.315, -0.942], [0.505, -0.426]], "farm_A": [[-0.711, -0.677], [-1.029, -1.064]], "farm_B": [[0.505, -0.426], [0.428, 0.068]], "thigh_A": [[0.0, 0.0], [-0.556, 0.643]], "thigh_B": [[0.0, 0.0], [-0.24, 0.815]], "calf_A": [[-0.556, 0.643], [-0.724, 1.476]], "calf_B": [[-0.24, 0.815], [-0.619, 1.576]]}}, "v1_ghirlandaio_leo": {"w": 389, "h": 600, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.038, -1.348]], "sho_A": [[0.0, -1.0], [-0.319, -0.975]], "sho_B": [[0.0, -1.0], [0.319, -1.025]], "uarm_A": [[-0.319, -0.975], [-0.759, -1.306]], "uarm_B": [[0.319, -1.025], [0.586, -0.544]], "farm_A": [[-0.759, -1.306], [-0.275, -1.433]], "farm_B": [[0.586, -0.544], [0.883, -0.142]], "thigh_A": [[0.0, 0.0], [-0.127, 0.84]], "thigh_B": [[0.0, 0.0], [0.46, 0.714]], "calf_A": [[-0.127, 0.84], [-0.753, 1.415]], "calf_B": [[0.46, 0.714], [-0.322, 1.046]]}}, "v2_veneziano_leo": {"w": 384, "h": 600, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.056, -1.345]], "sho_A": [[0.0, -1.0], [-0.317, -0.954]], "sho_B": [[0.0, -1.0], [0.317, -1.046]], "uarm_A": [[-0.317, -0.954], [-0.722, -1.325]], "uarm_B": [[0.317, -1.046], [0.556, -0.551]], "farm_A": [[-0.722, -1.325], [-0.261, -1.517]], "farm_B": [[0.556, -0.551], [0.706, -0.074]], "thigh_A": [[0.0, 0.0], [-0.779, 0.34]], "thigh_B": [[0.0, 0.0], [-0.068, 0.847]], "calf_A": [[-0.779, 0.34], [-1.545, 0.709]], "calf_B": [[-0.068, 0.847], [-0.866, 1.14]]}}, "v3_bassano_shepherd": {"w": 656, "h": 600, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.079, -1.341]], "sho_A": [[0.0, -1.0], [-0.319, -0.973]], "sho_B": [[0.0, -1.0], [0.319, -1.027]], "uarm_A": [[-0.319, -0.973], [-0.868, -0.995]], "farm_A": [[-0.868, -0.995], [-0.478, -1.307]]}}, "b2_gaddi_shepherd": {"w": 783, "h": 600, "segs": {"spine": [[0.0, 0.0], [0.0, -1.0]], "neck": [[0.0, -1.0], [-0.226, -1.267]], "sho_A": [[0.0, -1.0], [-0.281, -0.847]], "sho_B": [[0.0, -1.0], [0.281, -1.153]], "uarm_A": [[-0.281, -0.847], [-0.831, -0.85]], "uarm_B": [[0.281, -1.153], [0.819, -1.269]], "farm_A": [[-0.831, -0.85], [-1.282, -1.065]], "farm_B": [[0.819, -1.269], [0.845, -0.769]], "thigh_A": [[0.0, 0.0], [-0.1, 0.844]], "thigh_B": [[0.0, 0.0], [-0.276, 0.804]], "calf_A": [[-0.1, 0.844], [-0.717, 1.428]], "calf_B": [[-0.276, 0.804], [-0.948, 1.324]]}}};
+const C='https://commons.wikimedia.org/wiki/File:';
+const W=[
+ {n:1,k:'a1_bronze_satyr',g:'apo',a:'伊特鲁里亚工匠',t:'带萨提尔的青铜双柄（其一）',d:'公元前 5 世纪早期，纽约大都会艺术博物馆',url:'https://www.metmuseum.org/art/collection/search/255956',w:'纯程式的古代源头。大都会博物馆的著录直接把这个手势称为 aposkopein，并说它是萨提尔的典型姿势。萨提尔是酒神队伍里的守望者：他张望的，常常是神的降临。'},
+ {n:2,k:'01_rembrandt_old_man',g:'apo',a:'伦勃朗',t:'手遮眼的老人',d:'约 1639 年，蚀刻版画',url:C+'Old_Man_Shading_His_Eyes_with_His_Hand_MET_DP814560.jpg',w:'没有叙事、只有手势的习作，作为第二个“纯程式”基准。他看什么，画面不说。'},
+ {n:3,k:'v2_veneziano_leo',g:'apo',a:'多梅尼科·韦内齐亚诺',t:'圣方济各领受圣痕（局部：利奥修士）',d:'约 1445 年，圣卢西亚祭坛画的预言板，华盛顿国家美术馆',url:C+'Domenico_Veneziano_-_The_Stigmatization_of_St_Francis_(predella_1)_-_WGA06432.jpg',w:'右上角的红色六翼天使，就是那个“不可见之物”。方济各在画面另一侧领受圣痕；陪伴他的利奥修士坐在地上，以手遮额仰望——他是这个奇迹的目击者。'},
+ {n:4,k:'v1_ghirlandaio_leo',g:'apo',a:'多梅尼科·吉兰达约',t:'圣方济各领受圣痕（局部：利奥修士）',d:'1483–1485 年，佛罗伦萨圣三一教堂萨塞蒂礼拜堂',url:C+'Cappella_Sassetti_Miracle_of_the_Stigmata.jpg',w:'同一题材四十年后，利奥修士的手势几乎原样重现（肘角 52°，与韦内齐亚诺的 65° 同属一区）。这座礼拜堂正是瓦尔堡研究过的萨塞蒂礼拜堂：程式在这里不是古代的余生，而是基督教异象的标准写法。'},
+ {n:5,k:'v3_bassano_shepherd',g:'apo',a:'雅各布·巴萨诺（传）',t:'天使向牧羊人报喜（局部）',d:'约 1555–1560 年，华盛顿国家美术馆',url:C+'The_Annunciation_to_the_Shepherds_sc147.jpg',w:'天使从光里俯冲而下，左下角的牧人双手压在额前。挡光与张望在这里合二为一：光太亮，而光里又有要看的东西。'},
+ {n:6,k:'06b_transfig_apostles',g:'apo',a:'拉斐尔',t:'基督显圣容（局部：塔波尔山上的使徒）',d:'1516–1520 年，梵蒂冈美术馆',url:C+'Transfiguration_Raphael.jpg',w:'山顶的使徒面对变容的基督以手遮光。山下的人群看不见这道光——同一幅画里，看见与看不见被上下分开。'},
+ {n:7,k:'b2_gaddi_shepherd',g:'bl',a:'塔代奥·加迪',t:'天使向牧羊人报喜（局部）',d:'约 1328–1330 年，佛罗伦萨圣十字教堂巴龙切利礼拜堂',url:C+'Taddeo_Gaddi_Shepherds.jpg',w:'和 5 号同一题材，身体却做了相反的事：牧人向后倒下，手掌张开迎向光，不遮也不挡。被光击中，而不是在光中张望。'},
+ {n:8,k:'05_caravaggio_paul',g:'bl',a:'卡拉瓦乔',t:'圣保罗皈依',d:'1601 年，罗马人民圣母堂',url:C+'Conversion_on_the_Way_to_Damascus-Caravaggio_(c.1600-1).jpg',w:'双臂伸直（肘角 170°）、身体倒成近水平：他看见了，却是闭着眼睛看见的。'},
+ {n:9,k:'07_bernini_teresa',g:'en',a:'贝尔尼尼',t:'圣特雷莎的狂喜',d:'1647–1652 年，罗马胜利之后圣母堂',url:C+'Ecstasy_of_Saint_Teresa_September_2015-2a.jpg',w:'手臂垂落、几乎伸直，手离眼睛最远。出神不是去看，而是被看见之物占据。'},
+ {n:10,k:'08_botticelli_annunciation',g:'en',a:'波提切利',t:'切斯泰洛天使报喜（马利亚）',d:'1489–1490 年，佛罗伦萨乌菲齐美术馆',url:C+'Botticelli,_Cestello_Annunciation,_1489,_Uffizi.jpg',w:'不可见之物降临时的“惊扰”：一手按胸，一手伸向天使，身体后缩。'},
+ {n:11,k:'10_ribera_jacob',g:'hd',a:'里贝拉',t:'雅各之梦',d:'1639 年，马德里普拉多博物馆',url:C+'Jos%C3%A9_de_Ribera_-_Jacob%27s_Dream_-_WGA19383.jpg',w:'以手托头而眠，天梯只是右上方一片光雾。手和眼一样近，但肘角只有 29°：异象在闭着的眼睛后面。'},
+ {n:12,k:'09_piero_constantine',g:'hd',a:'皮耶罗·德拉·弗朗切斯卡',t:'君士坦丁之梦（局部：床边的侍从）',d:'约 1458–1466 年，阿雷佐圣方济各教堂',url:C+'Piero_della_Francesca_-_4._Vision_of_Constantine_-_WGA17508.jpg',w:'测量的是醒着的侍从，而不是被被褥遮住的皇帝。天使就在头顶，他托着头，什么也没看见。'},
+ {n:13,k:'14_durer_melencolia',g:'hd',a:'丢勒',t:'忧郁 I',d:'1514 年，铜版画',url:C+'Albrecht_D%C3%BCrer,_Melencolia_I,_1514,_NGA_6640.jpg',w:'Iconclass 31A25311 的典型。看向一个不在画里的方向，是向内的想象。瓦尔堡在 1920 年论路德时代占卜的文章里讨论过这幅版画。'},
+ {n:14,k:'11_caravaggio_thomas',g:'far',a:'卡拉瓦乔',t:'多疑的多马',d:'1601–1602 年，波茨坦无忧宫画廊',url:C+'The_Incredulity_of_Saint_Thomas-Caravaggio_(1601-2).jpg',w:'不肯只用眼睛相信：手离开了眼睛，伸进伤口去确认。'},
+ {n:15,k:'12_titian_noli',g:'far',a:'提香',t:'不要碰我（抹大拉的马利亚）',d:'约 1514 年，伦敦国家美术馆',url:C+'Titian_-_Noli_me_Tangere_-_Google_Art_Project.jpg',w:'和 14 号相反：看得见，却不许碰，伸出的手停在半空。'},
+ {n:16,k:'15_bruegel_blind',g:'far',a:'老彼得·勃鲁盖尔',t:'盲人的寓言（局部：仰着脸的第三人）',d:'1568 年，那不勒斯卡波迪蒙特博物馆',url:C+'Pieter_Bruegel_the_Elder_-_The_Parable_of_the_Blind_Leading_the_Blind_-_WGA3511.jpg',w:'整块板的反极：他仰起脸，手却搭在前面那人的肩上。'}];
+const GR={apo:['Aposkopein','远眺','手举到额前，在眼睛上方投下阴影。1–2 是纯程式，3–6 是异象场景里的目击者。','#4a90e2'],bl:['Blendung','被光击中','不再张望：身体倒下，手臂张开迎向光。','#b9a042'],en:['Entrückung','出神与报喜','不可见之物降临到身上：身体后仰或后缩。','#796d90'],hd:['Caput in manu','以手托头','手同样贴着脸，但眼睛闭着或向下：梦与沉思。','#4d8885'],far:['Tasten · Blindheit','触摸与失明','手离开眼睛，去触摸、去试探。','#9f6544']};
+const R={};ROWS.forEach(r=>R[r.k]=r);
+const f0=v=>v==null?'—':Math.round(v)+'°', f2=v=>v==null?'—':v.toFixed(2);
+const proto={elbow:0,he:0};const apo=W.filter(x=>x.g==='apo');apo.forEach(x=>{proto.elbow+=R[x.k].elbow/apo.length;proto.he+=R[x.k].hand_eye/apo.length});
+const dist=k=>Math.hypot((R[k].elbow-proto.elbow)/30,(R[k].hand_eye-proto.he)/0.3);
+const IC={
+ '92L41':'萨提尔（泛称）','31D16':'老人','11H(FRANCIS)59':'圣方济各领受圣痕：在拉维尔纳山上见到为羽翼环绕的十字架上的基督',
+ '73B14':'夜间向牧羊人报告基督诞生，空中有天使歌唱','73C713':'基督显圣容：摩西与以利亚在塔波尔山上分立基督两侧',
+ '73F2212':'往大马士革路上基督向扫罗显现，扫罗坠马、被光照瞎','11HH(TERESA OF AVILA)37':'圣特雷莎冥想、出神',
+ '73A521':'天使报喜：马利亚站立','71C3121':'雅各之梦：枕石而睡，见天梯通天、天使上下',
+ '11H(CONSTANTINE)341':'君士坦丁米尔维安桥之战前的梦：天使持十字架预言胜利','32A14':'忧郁气质',
+ '73E364':'多马伸手触摸基督肋旁的伤口','73E31':'“不要碰我”：抹大拉的马利亚跪在扮作园丁的基督前','31A41111':'盲人引盲人（马太福音 15:14）'};
+const MODE={corp:['显现于肉眼','visio corporalis','本来不可见的东西取了可见的形，出现在画中空间，人用肉眼看见它'],
+ spir:['显现于想象','visio spiritualis','在梦、出神或沉思中以形象出现，身体的眼睛并没有看见'],
+ intel:['不可显现','visio intellectualis','理智之见不借任何形象，奥古斯丁视之为最高的看；在定义上画不出来'],
+ priv:['未能看见','privatio','在场却没有看见，或者失明（本研究补充的一行）'],
+ none:['纯程式','—','画面没有给出被看之物，只有姿势本身（本研究补充的一行）']};
+const LIT={
+ met:['大都会艺术博物馆 255956 著录','把这个手势直接称为 aposkopein'],
+ pliny:['普林尼《博物志》35.138','古代文献中“远眺者”的出处，大英博物馆对一件黑绘酒杯的著录引用了这一处'],
+ sass:['瓦尔堡《弗朗切斯科·萨塞蒂的遗嘱》（1907）','瓦尔堡研究萨塞蒂礼拜堂的论文'],
+ stan:['Impett & Moretti，斯坦福小册子 16 号（2017）','论文图 3.1、3.6 即出自萨塞蒂礼拜堂'],
+ luth:['瓦尔堡《路德时代文字与图像中的异教古代预言》（1920）','讨论过《忧郁 I》'],
+ pans:['潘诺夫斯基与扎克斯尔《丢勒的〈忧郁 I〉》（1923）','把“I”读作阿格里帕三级忧郁中的第一级：想象'],
+ aug:['奥古斯丁《创世记字解》第 12 卷','三种“看”的出处'],
+ bax:['巴克森德尔《15 世纪意大利的绘画与经验》（1972）','天使报喜中马利亚的“惊扰”等阶段']};
+const A={
+ a1_bronze_satyr:{ic:'92L41',mode:'none',obj:'画面未给出（萨提尔常是酒神显现的守望者）',eye:'睁开',route:'机构命名',st:'核心例',ev:'文献',lit:['met','pliny']},
+ '01_rembrandt_old_man':{ic:'31D16',mode:'none',obj:'画面未给出',eye:'睁开，在手的阴影下',route:'标题检索（“手遮眼”）',st:'核心例',ev:'测量',lit:[]},
+ v2_veneziano_leo:{ic:'11H(FRANCIS)59',mode:'corp',obj:'六翼天使形的基督（右上角红色形象）',eye:'睁开，仰视',route:'题材检索',st:'核心例',ev:'测量 + 题材',lit:[]},
+ v1_ghirlandaio_leo:{ic:'11H(FRANCIS)59',mode:'corp',obj:'六翼天使形的基督（左上角）',eye:'睁开，仰视',route:'题材检索',st:'核心例',ev:'测量 + 题材 + 文献',lit:['sass','stan']},
+ v3_bassano_shepherd:{ic:'73B14',mode:'corp',obj:'报喜的天使与天上的光',eye:'被双手遮住',route:'题材检索',st:'核心例',ev:'测量 + 题材',lit:[]},
+ '06b_transfig_apostles':{ic:'73C713',mode:'corp',obj:'光中变容的基督',eye:'在手下，望向光',route:'艺术史判断',st:'核心例',ev:'测量 + 题材',lit:[]},
+ b2_gaddi_shepherd:{ic:'73B14',mode:'corp',obj:'报喜的天使与天上的光',eye:'睁开，仰视',route:'题材检索（作为对照）',st:'对照例',ev:'测量 + 题材',lit:[]},
+ '05_caravaggio_paul':{ic:'73F2212',mode:'corp',obj:'天上的光（基督的显现）',eye:'闭上',route:'艺术史判断',st:'对照例',ev:'题材',lit:[]},
+ '07_bernini_teresa':{ic:'11HH(TERESA OF AVILA)37',mode:'spir',obj:'持金箭的天使',eye:'半闭',route:'艺术史判断',st:'对照例',ev:'题材',lit:[]},
+ '08_botticelli_annunciation':{ic:'73A521',mode:'corp',obj:'天使加百列',eye:'低垂',route:'艺术史判断',st:'对照例',ev:'题材 + 文献',lit:['bax']},
+ '10_ribera_jacob':{ic:'71C3121',mode:'spir',obj:'通天的梯子与天使（梦中）',eye:'闭上',route:'艺术史判断',st:'对照例',ev:'测量 + 题材',lit:[]},
+ '09_piero_constantine':{ic:'11H(CONSTANTINE)341',mode:'priv',obj:'持十字架的天使（只出现在皇帝的梦里）',eye:'睁开，却未看见',route:'艺术史判断',st:'对照例',ev:'测量 + 题材',lit:[]},
+ '14_durer_melencolia':{ic:'32A14',mode:'spir',obj:'不在画中的方向（想象的对象）',eye:'睁开，凝视',route:'艺术史判断',st:'对照例',ev:'测量 + 文献',lit:['luth','pans']},
+ '11_caravaggio_thomas':{ic:'73E364',mode:'corp',obj:'复活基督的伤口',eye:'睁开，盯住伤口',route:'艺术史判断',st:'对照例',ev:'题材',lit:[]},
+ '12_titian_noli':{ic:'73E31',mode:'corp',obj:'复活的基督',eye:'睁开，仰视',route:'艺术史判断',st:'对照例',ev:'题材',lit:[]},
+ '15_bruegel_blind':{ic:'31A41111',mode:'priv',obj:'无（失明）',eye:'睁开而失明',route:'艺术史判断',st:'反极',ev:'题材',lit:[]}};
+
+const CC={text:['文本来源','#7d6039'],relig:['宗教制度与实践','#703b3f'],patron:['赞助与政治','#5b7db1'],theory:['理论与知识','#214f52'],media:['媒介与功能','#5f6150'],social:['社会与文化','#796d90']};
+const CTX={
+ t_luke2:['text','《路加福音》2:8–14','天使显现，主的荣光照着牧人，牧人十分惧怕'],
+ t_bonav:['text','波拿文都拉《圣方济各大传》','1260 年代；记方济各在拉维尔纳山见六翼天使形的十字架上的基督'],
+ t_matt17:['text','《马太福音》17:1–8','门徒听见云中的声音，俯伏在地，极其害怕'],
+ t_acts9:['text','《使徒行传》9:3–9','天上的光照着扫罗，他扑倒在地，三日不能看见'],
+ t_vida:['text','特雷莎《自传》第 29 章','记天使以金箭刺入她的心'],
+ t_luke1:['text','《路加福音》1:26–38','天使加百列向马利亚报喜'],
+ t_gen28:['text','《创世记》28:10–17','雅各在伯特利梦见天梯'],
+ t_legaurea:['text','雅各·德·沃拉吉内《黄金传说》','真十字架传说，含君士坦丁之梦'],
+ t_john20:['text','《约翰福音》第 20 章','抹大拉的马利亚见复活的基督（11–18 节）；多马摸伤口（24–29 节）'],
+ t_matt15:['text','《马太福音》15:14','瞎子领瞎子，两个人都要掉在坑里'],
+ r_franc:['relig','方济各会的教堂与灵修','方济各会的教堂、圣徒崇拜与灵修传统'],
+ r_ctr:['relig','反宗教改革','特伦托会议之后，教会重新强调圣徒、异象和图像在信仰中的作用'],
+ p_medici:['patron','美第奇家族网络','佛罗伦萨银行世家及其周边'],
+ p_chapel:['patron','家族礼拜堂的委托','富裕家族出资装饰的私人或丧葬礼拜堂'],
+ k_ficino:['theory','费奇诺与阿格里帕论忧郁与想象','文艺复兴新柏拉图主义的忧郁理论'],
+ k_alberti:['theory','阿尔贝蒂《论绘画》（1435）','主张通过身体的动作表现心灵的动作'],
+ m_predella:['media','祭坛画的预言板','祭坛画下方的小幅叙事画'],
+ m_altar:['media','祭坛画与祭坛装置','供礼拜仪式中观看的核心图像'],
+ m_fresco:['media','礼拜堂壁画组画','按叙事顺序排列的连续画面'],
+ m_print:['media','版画','可复制、可流通，进入收藏与市场'],
+ s_symp:['social','古代会饮与酒神文化','饮酒聚会及其器物'],
+ s_nl:['social','1560 年代尼德兰的宗教冲突','加尔文派圣像破坏运动之后的社会语境']};
+// [work n, ctx id, 'doc' | 'int', source note]
+const CL=[
+ [1,'s_symp','doc','大都会博物馆著录：铜柄原属一只用来调和酒与水的柱形调酒罐'],
+ [2,'m_print','doc','伦勃朗的蚀刻版画'],
+ [3,'t_bonav','doc','题材出处'],[3,'r_franc','doc','题材为方济各'],[3,'m_predella','doc','圣卢西亚祭坛画的预言板'],[3,'k_alberti','int','15 世纪佛罗伦萨画家，属阿尔贝蒂理论的语境'],
+ [4,'t_bonav','doc','题材出处'],[4,'r_franc','doc','题材为方济各'],[4,'p_medici','doc','赞助人弗朗切斯科·萨塞蒂是美第奇银行的总经理'],[4,'p_chapel','doc','萨塞蒂家族礼拜堂'],[4,'m_fresco','doc','礼拜堂的方济各生平组画'],[4,'k_alberti','int','15 世纪佛罗伦萨画家，属阿尔贝蒂理论的语境'],
+ [5,'t_luke2','doc','题材出处'],
+ [6,'t_matt17','doc','题材出处'],[6,'p_medici','doc','朱利奥·德·美第奇枢机为纳博讷大教堂委托'],[6,'m_altar','doc','祭坛画'],
+ [7,'t_luke2','doc','题材出处'],[7,'r_franc','doc','位于方济各会的圣十字教堂'],[7,'p_chapel','doc','巴龙切利家族礼拜堂'],[7,'m_fresco','doc','礼拜堂的圣母生平组画'],
+ [8,'t_acts9','doc','题材出处'],[8,'p_chapel','doc','提贝里奥·切拉西的礼拜堂'],[8,'r_ctr','int','1600 年前后的罗马'],
+ [9,'t_vida','doc','题材出处'],[9,'r_ctr','doc','特雷莎于 1622 年封圣，作品作于 1647–1652 年'],[9,'p_chapel','doc','费德里科·科尔纳罗枢机的家族礼拜堂'],[9,'m_altar','doc','礼拜堂的祭坛装置'],
+ [10,'t_luke1','doc','题材出处'],[10,'m_altar','doc','切斯泰洛教堂的祭坛画'],[10,'k_alberti','int','15 世纪佛罗伦萨画家，属阿尔贝蒂理论的语境'],
+ [11,'t_gen28','doc','题材出处'],
+ [12,'t_legaurea','doc','真十字架组画的文本来源'],[12,'r_franc','doc','位于阿雷佐的圣方济各教堂'],[12,'p_chapel','doc','巴奇家族礼拜堂'],[12,'m_fresco','doc','真十字架传说组画'],[12,'k_alberti','int','皮耶罗本人也写过透视论著'],
+ [13,'k_ficino','doc','潘诺夫斯基与扎克斯尔的解读'],[13,'m_print','doc','丢勒的铜版画'],
+ [14,'t_john20','doc','题材出处'],[14,'r_ctr','int','1600 年前后的罗马；强调可触摸的证据'],
+ [15,'t_john20','doc','题材出处'],
+ [16,'t_matt15','doc','题材出处'],[16,'s_nl','int','作于 1568 年；与时局的关系属于解释']];
+
+W.forEach(x=>x.ctx=CL.filter(c=>c[0]===x.n));
+const HB={shade:'手在眉上',head:'手托着头',up:'手臂迎向上方',away:'手离开眼睛'};
+const bin=k=>{const r=R[k];if(r.hand_eye<0.45&&r.wrist_above_eye>0&&r.elbow>35)return 'shade';if(r.hand_eye<0.45&&r.elbow<=35)return 'head';if(r.elbow>120&&r.arm_elev>80)return 'up';return 'away'};
+W.forEach(x=>{x.bin=bin(x.k);x.ann=A[x.k]});
+// board
+const OVK={"a1_bronze_satyr": [278, 600, [[128, 50], [128, 50], [128, 50], null, null, [103, 122], [181, 119], [37, 131], null, [94, 31], null, [120, 240], [170, 240], [130, 330], [165, 330], [130, 420], [150, 420]]], "01_rembrandt_old_man": [479, 389, [[172, 118], [172, 118], [172, 118], null, null, [99, 291], [290, 273], null, [381, 291], null, [254, 109], null, null, null, null, null, null]], "06b_transfig_apostles": [577, 304, [[282, 60], [282, 60], [282, 60], null, null, [265, 90], [307, 83], [234, 67], [365, 108], [257, 54], [411, 102], [282, 154], [282, 154], [195, 183], null, null, null]], "05_caravaggio_paul": [458, 600, [[326, 529], [326, 529], [326, 529], null, null, [218, 497], [359, 491], [150, 421], [400, 426], [135, 376], [424, 368], [147, 509], [147, 509], [71, 444], null, [24, 491], null]], "07_bernini_teresa": [477, 600, [[370, 200], [370, 200], [370, 200], null, null, [327, 267], [393, 280], null, [360, 353], null, [360, 420], [327, 400], [327, 400], [280, 447], null, [300, 567], null]], "08_botticelli_annunciation": [318, 581, [[167, 112], [167, 112], [167, 112], null, null, [167, 181], [237, 166], [137, 235], [260, 227], [102, 269], [221, 219], [206, 327], [260, 327], [206, 412], [267, 412], [175, 512], [221, 519]]], "09_piero_constantine": [218, 253, [[102, 73], [102, 73], [102, 73], null, null, [80, 86], [112, 88], [67, 133], [136, 101], [121, 146], [112, 75], [82, 146], [112, 146], [82, 186], [139, 181], [89, 220], [152, 218]]], "10_ribera_jacob": [718, 413, [[575, 133], [575, 133], [575, 133], null, null, [470, 143], [540, 158], [450, 233], [590, 268], [495, 278], [598, 173], [340, 223], [340, 223], [230, 253], [230, 303], [115, 273], [150, 333]]], "11_caravaggio_thomas": [800, 594, [[355, 280], [355, 280], [355, 280], null, null, [420, 320], [560, 290], [330, 355], [640, 410], [290, 345], [590, 470], [520, 540], [520, 540], null, null, null, null]], "12_titian_noli": [393, 301, [[138, 101], [138, 101], [138, 101], null, null, [133, 126], [161, 126], [108, 156], [156, 201], [91, 141], [161, 251], [226, 211], [226, 211], [206, 241], null, [351, 236], null]], "14_durer_melencolia": [267, 466, [[140, 99], [140, 99], [140, 99], null, null, [124, 146], [177, 146], [117, 193], [147, 219], [100, 216], [157, 123], [157, 246], [157, 246], [90, 266], [144, 286], [117, 393], [157, 399]]], "15_bruegel_blind": [343, 431, [[178, 97], [178, 97], [178, 97], null, null, [151, 128], [199, 133], [110, 183], [215, 161], [104, 228], [240, 144], [143, 239], [143, 239], [143, 283], [168, 294], [149, 317], [165, 328]]], "v1_ghirlandaio_leo": [389, 600, [[123, 377], [123, 377], [123, 377], null, null, [108, 404], [150, 390], [100, 479], [179, 340], [83, 550], [123, 348], [162, 475], [162, 475], [146, 567], [208, 550], [237, 567], [267, 571]]], "v2_veneziano_leo": [384, 600, [[265, 280], [265, 280], [265, 280], null, null, [245, 325], [295, 320], [205, 285], [325, 390], [260, 265], [345, 465], [265, 435], [265, 435], [200, 460], [260, 475], [95, 505], [175, 502]]], "v3_bassano_shepherd": [656, 600, [[81, 377], [81, 377], [81, 377], null, null, [37, 437], [96, 442], null, [196, 438], null, [112, 371], null, null, null, null, null, null]], "b2_gaddi_shepherd": [783, 600, [[391, 257], [391, 257], [391, 257], null, null, [350, 320], [450, 275], [286, 375], [477, 239], [318, 402], [495, 152], [514, 384], [514, 384], [623, 420], [623, 448], [723, 393], [732, 430]]]};
+const ovSvg=k=>{const [w,h,kp]=OVK[k];const wl=kp[9],wr=kp[10],lA=wl&&wr?wl[1]<=wr[1]:!!wl;const col=i=>(i%2===1)===lA?'#6cc070':'#4a90e2';const m=(a,b)=>a&&b?[(a[0]+b[0])/2,(a[1]+b[1])/2]:a||b;const N=m(kp[5],kp[6]),Hd=m(kp[1],kp[2])||kp[0];const L=(a,b)=>a&&b?`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#f2f2f2" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`:'';const D=(p,c,r)=>p?`<line x1="${p[0]}" y1="${p[1]}" x2="${p[0]}" y2="${p[1]}" stroke="#fff" stroke-width="${r+3}" stroke-linecap="round" vector-effect="non-scaling-stroke"/><line x1="${p[0]}" y1="${p[1]}" x2="${p[0]}" y2="${p[1]}" stroke="${c}" stroke-width="${r}" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`:'';return `<svg class="ov" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="img/${k}.jpg" width="${w}" height="${h}"/>${[[5,6],[5,7],[7,9],[6,8],[8,10],[11,12],[5,11],[6,12],[11,13],[13,15],[12,14],[14,16]].map(([a,b])=>L(kp[a],kp[b])).join('')}${L(N,Hd)}${kp.map((p,i)=>i>=5?D(p,col(i),7):'').join('')}${D(Hd,'#0e0d0c',9)}</svg>`};
+const skel=k=>{const s=SK[k].segs;let xs=[],ys=[];Object.values(s).forEach(([a,b])=>{xs.push(a[0],b[0]);ys.push(a[1],b[1])});const x0=Math.min(...xs)-.25,x1=Math.max(...xs)+.25,y0=Math.min(...ys)-.25,y1=Math.max(...ys)+.25;
+ const pts=new Map();Object.entries(s).forEach(([n,[a,b]])=>{const side=n.endsWith('_A')?'A':n.endsWith('_B')?'B':'C';if(!pts.has(a.join()))pts.set(a.join(),[a,'C']);pts.set(b.join(),[b,side])});
+ const col={A:'#6cc070',B:'#4a90e2',C:'#ffffff'};const dot=(p,w,c)=>`<line x1="${p[0]}" y1="${p[1]}" x2="${p[0]}" y2="${p[1]}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+ const head=s.neck?s.neck[1]:null;
+ return `<svg viewBox="${x0} ${y0} ${x1-x0} ${y1-y0}" aria-hidden="true">${Object.values(s).map(([a,b])=>`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#f2f2f2" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`).join('')}${[...pts.values()].filter(([p])=>!head||p.join()!==head.join()).map(([p,sd])=>dot(p,10,'#ffffff')+dot(p,7,col[sd])).join('')}${head?dot(head,16,'#ffffff')+dot(head,11,'#0e0d0c'):''}</svg>`};
+const board=document.getElementById('board');
+board.innerHTML=W.map(x=>`<div class="slot${x.g==='apo'?' core':''}" style="grid-area:s${x.n}" data-n="${x.n}" tabindex="0" role="button" aria-label="${x.n} ${x.a}《${x.t}》"><b>${x.n}</b><img class="ph" src="img/${x.k}.jpg" alt="">${ovSvg(x.k)}${skel(x.k)}</div>`).join('');
+board.querySelectorAll('.slot').forEach(s=>{s.addEventListener('click',()=>showCard(+s.dataset.n));s.addEventListener('keydown',e=>{if(e.key==='Enter')showCard(+s.dataset.n)})});
+const mb=[...document.querySelectorAll('[data-m]')].filter(b=>b.tagName==='BUTTON');
+mb.forEach(b=>b.addEventListener('click',()=>{board.dataset.m=b.dataset.m;mb.forEach(o=>o.setAttribute('aria-pressed',o===b))}));
+// card
+const cardEl=document.getElementById('card');
+const showTag=d=>{const id=d.id,lk=links.filter(l=>(l.target.id||l.target)===id||(l.source.id||l.source)===id),ws=[...new Set(lk.map(l=>[l.source.id||l.source,l.target.id||l.target]).flat().filter(s=>s[0]==='w'&&s!==id).map(s=>+s.slice(1)))].sort((a,b)=>a-b).map(n=>W.find(w=>w.n===n));
+ const wl=x=>`<b style="color:var(--red)">${x.n}</b> ${x.a}`;let head='',body='';
+ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+ if(d.type==='ic'){const code=id.slice(3),tx=[...new Set(ws.flatMap(x=>x.ctx.filter(e=>CTX[e[1]][0]==='text').map(e=>e[1])))].filter(k=>ws.every(x=>x.ctx.some(e=>e[1]===k)));
+  head=`同一题材`;body=`<p><b>题材</b>：${IC[code]} <span class="m">(Iconclass ${code})</span></p>${tx.map(k=>`<p><b>故事出处</b>：${CTX[k][1]} <span class="m">— ${CTX[k][2]}</span></p>`).join('')}<p><b>涉及作品</b>：${ws.map(x=>wl(x)+'《'+x.t+'》').join('；')}</p>`}
+ else if(d.type==='cat'){head=CC[d.cat][0]+'：'+d.label;body=ws.map(x=>{const r=factOf(x,d.fid);return `<p>${wl(x)}：<span class="${r.lv==='int'?'dash':''}">${r.note}</span>${r.lv==='int'?'<span class="m">（推断）</span>':''}</p>`}).join('')}
+ else if(d.type==='mode'){const m=id.slice(2);head=`如何到达：${MODE[m][0]}`;body=`<p class="m">${MODE[m][1]}</p><p>${MODE[m][2]}</p><p><b>涉及作品</b>：${ws.map(wl).join('；')}</p>`}
+ else{const k=id.slice(2);head=LIT[k][0];body=`<p>${LIT[k][1]}</p>`}
+ cardEl.innerHTML=`<h3>${head}</h3>${body}`;};
+const showCard=n=>{const x=W.find(w=>w.n===n),r=R[x.k],a=x.ann;
+ document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.dataset.n===n));
+ cardEl.innerHTML=`<h3><span style="color:var(--red)">${x.n}</span>　${x.a}《${x.t}》</h3><p class="m" style="margin:2px 0 0">${x.d} · 测量：${r.fig} · ${a.st} · 入选：${a.route} · <a href="${x.url}" style="color:inherit">原图</a></p>
+ <div class="cols">
+ <div><h4>形态</h4><p>${HB[x.bin]}</p><p class="m">肘角 ${f0(r.elbow)} · 手眼距离 ${f2(r.hand_eye)} · 手腕高出眼睛 ${f2(r.wrist_above_eye)}</p></div>
+ <div><h4>图像学</h4><p>${a.ic}　${IC[a.ic]}</p><p class="m">不可见之物：${a.obj}<br>如何到达：${MODE[a.mode][0]} · 眼睛：${a.eye}</p></div>
+ <div><h4>语境</h4>${x.ctx.length?x.ctx.map(([n,id,lv])=>`<p><span style="color:${CC[CTX[id][0]][1]}">●</span> <span class="${lv==='int'?'dash':''}">${CTX[id][1]}</span></p>`).join(''):'<p class="m">—</p>'}</div>
+ <div><h4>解释</h4><p>${x.w}</p></div></div>`;};
+// grid
+const rows=['corp','spir','intel','priv','none'],cols=['shade','head','up','away'];
+document.getElementById('gridmap').innerHTML='<div></div>'+cols.map(c=>`<div class="hd">${HB[c]}</div>`).join('')+rows.map(m=>`<div class="rh">${MODE[m][0]}<small>${MODE[m][1]}</small></div>`+cols.map(c=>{const xs=W.filter(x=>x.ann.mode===m&&x.bin===c);return `<div class="cell${xs.length?'':' empty'}">${xs.map(x=>`<button class="chip" data-n="${x.n}"><img src="img/${x.k}.jpg" alt=""><b>${x.n}</b><span>${x.a}</span></button>`).join('')}</div>`}).join('')).join('');
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>showCard(+c.dataset.n)));
+// scatter
+const s=document.getElementById('chart');
+const drawSc=()=>{const Wd=s.clientWidth,H=s.clientHeight;if(!Wd)return;const sm=Wd<520,m={l:sm?40:54,r:14,t:16,b:44};const X=v=>m.l+v/180*(Wd-m.l-m.r),Y=v=>H-m.b-v/1.6*(H-m.t-m.b);
+ let o=`<rect x="${X(40)}" y="${Y(.45)}" width="${X(70)-X(40)}" height="${Y(0)-Y(.45)}" fill="#4a90e2" opacity=".12"/><rect x="${X(10)}" y="${Y(.3)}" width="${X(33)-X(10)}" height="${Y(0)-Y(.3)}" fill="#4d8885" opacity=".12"/>`;
+ for(let v=0;v<=180;v+=sm?60:30)o+=`<text x="${X(v)}" y="${Y(0)+18}" font-size="12" text-anchor="middle" fill="currentColor" opacity=".7">${v}°</text>`;
+ for(let v=0;v<=1.6;v+=.4)o+=`<line x1="${m.l}" x2="${Wd-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="currentColor" opacity="${v?0.1:0.45}"/><text x="${m.l-8}" y="${Y(v)+4}" font-size="12" text-anchor="end" fill="currentColor" opacity=".7">${v.toFixed(1)}</text>`;
+ o+=`<text x="${(m.l+Wd-m.r)/2}" y="${H-6}" font-size="12.5" text-anchor="middle" fill="currentColor">肘角</text><text transform="translate(13 ${(m.t+H-m.b)/2}) rotate(-90)" font-size="12.5" text-anchor="middle" fill="currentColor">手眼距离</text>`;
+ W.forEach(x=>{const r=R[x.k];o+=`<g style="cursor:pointer" data-n="${x.n}"><circle cx="${X(r.elbow)}" cy="${Y(r.hand_eye)}" r="${x.g==='apo'?8:6.5}" fill="${GR[x.g][3]}" stroke="var(--card)" stroke-width="2"><title>${x.n} ${x.a}《${x.t}》</title></circle><text x="${X(r.elbow)+10}" y="${Y(r.hand_eye)+4}" font-size="12.5" font-weight="600" fill="currentColor">${x.n}</text></g>`});
+ s.setAttribute('viewBox',`0 0 ${Wd} ${H}`);s.innerHTML=o;s.querySelectorAll('g[data-n]').forEach(g=>g.addEventListener('click',()=>showCard(+g.dataset.n)));};
+new ResizeObserver(drawSc).observe(s);
+// network
+const ET={form:['形态相近','#4a90e2',''],subj:['同一题材','#1e465f',''],contrast:['同题异形','#bf783a','6 4'],mode:['如何到达','#9aa49c','2 4'],lit:['文献','#4a513b',''],ctx:['语境','#9f6544','']};
+const on={form:true,subj:true,contrast:true,mode:true,lit:true,ctx:true};let onInt=true;
+document.getElementById('edgeLegend').innerHTML=Object.entries(ET).map(([k,[l,c,d]])=>`<label><input type="checkbox" data-e="${k}" checked> <i style="border-top-color:${c};${d?'border-top-style:dashed':''}"></i>${l}</label>`).join('')+'<label><input type="checkbox" id="intOn" checked> 含解释性语境（虚线）</label>';
+document.getElementById('ctxKeys').innerHTML='语境颜色：'+Object.entries(CC).filter(([k])=>['media','relig','patron','theory'].includes(k)).map(([k,[l,c]])=>`<span style="--c:${c}">${l}</span>`).join('');
+document.querySelectorAll('#edgeLegend input[data-e]').forEach(i=>i.addEventListener('change',()=>{on[i.dataset.e]=i.checked;drawNet()}));
+document.getElementById('intOn').addEventListener('change',e=>{onInt=e.target.checked;drawNet()});
+const fv=k=>[R[k].elbow/30,R[k].hand_eye/0.3,R[k].arm_elev/60];
+const nodes=[],links=[];
+W.forEach(x=>nodes.push({id:'w'+x.n,type:'work',x0:x}));
+Object.keys(MODE).forEach(m=>{if(W.some(x=>x.ann.mode===m))nodes.push({id:'m_'+m,type:'mode',label:MODE[m][0]})});
+[...new Set(W.map(x=>x.ann.ic))].forEach(c=>{if(W.filter(x=>x.ann.ic===c).length>1)nodes.push({id:'ic_'+c,type:'ic',label:c})});
+Object.keys(LIT).forEach(l=>{if(W.filter(x=>x.ann.lit.includes(l)).length>1)nodes.push({id:'l_'+l,type:'lit',label:LIT[l][0]})});
+nodes.push({id:'l_aug',type:'lit',label:LIT.aug[0]});
+const FACT={"wor": ["media", "礼拜空间", [3, 4, 6, 7, 8, 9, 10, 12], null], "pri": ["media", "私人观看", [5, 11, 14, 15, 16], null], "prt": ["media", "复制流通", [2, 13], null], "fra": ["relig", "方济各会", [3, 4, 7, 12], "r_franc"], "ctr": ["relig", "反宗教改革", [8, 9, 14], "r_ctr"], "med": ["patron", "美第奇圈子", [4, 6], "p_medici"], "cha": ["patron", "家族礼拜堂", [4, 7, 8, 9, 12], "p_chapel"], "alb": ["theory", "阿尔贝蒂《论绘画》", [3, 4, 10, 12], "k_alberti"]},MNOTE={"8": "切拉西礼拜堂侧墙上的画", "pri": "架上画"};
+const factOf=(x,fid)=>{const [dim,,ws,ref]=FACT[fid];if(!ws.includes(x.n))return null;let e=ref?x.ctx.find(c=>c[1]===ref):x.ctx.find(c=>CTX[c[1]][0]==='media');if(ref)return {lv:e?e[2]:'doc',note:e?e[3]:''};return {lv:'doc',note:e?CTX[e[1]][1]:(MNOTE[x.n]||MNOTE.pri)}};
+Object.entries(FACT).forEach(([fid,[dim,label,ws]])=>{if(ws.length>1)nodes.push({id:'k_'+fid,type:'cat',cat:dim,fid,label})});
+W.forEach(x=>{W.filter(y=>y!==x).map(y=>[y,Math.hypot(...fv(x.k).map((v,i)=>v-fv(y.k)[i]))]).sort((a,b)=>a[1]-b[1]).slice(0,2).forEach(([y])=>{if(!links.some(l=>l.t==='form'&&[l.source,l.target].sort().join()===['w'+x.n,'w'+y.n].sort().join()))links.push({source:'w'+x.n,target:'w'+y.n,t:'form'})});
+ links.push({source:'w'+x.n,target:'m_'+x.ann.mode,t:'mode'});
+ if(nodes.some(n=>n.id==='ic_'+x.ann.ic))links.push({source:'w'+x.n,target:'ic_'+x.ann.ic,t:'subj'});
+ x.ann.lit.forEach(l=>{if(nodes.some(n=>n.id==='l_'+l))links.push({source:'w'+x.n,target:'l_'+l,t:'lit'})});});
+W.forEach(x=>W.forEach(y=>{if(x.n<y.n&&x.ann.ic===y.ann.ic&&x.bin!==y.bin)links.push({source:'w'+x.n,target:'w'+y.n,t:'contrast'})}));
+Object.keys(MODE).forEach(m=>{if(nodes.some(n=>n.id==='m_'+m))links.push({source:'m_'+m,target:'l_aug',t:'lit'})});
+W.forEach(x=>Object.keys(FACT).forEach(fid=>{const r=factOf(x,fid);if(r&&nodes.some(m=>m.id==='k_'+fid))links.push({source:'w'+x.n,target:'k_'+fid,t:'ctx',cat:FACT[fid][0],lv:r.lv})}));
+const SHORT={"m_corp": "显现于肉眼", "m_spir": "显现于想象", "m_intel": "不可显现", "m_priv": "未能看见", "m_none": "纯程式", "ic_11H(FRANCIS)59": "同一题材", "ic_73B14": "同一题材", "l_aug": "奥古斯丁", "c_t_luke2": "路加 2", "c_t_bonav": "方济各大传", "c_t_john20": "约翰 20", "c_r_franc": "方济各会", "c_r_ctr": "反宗教改革", "c_p_medici": "美第奇", "c_p_chapel": "家族礼拜堂", "c_k_alberti": "阿尔贝蒂", "c_m_altar": "祭坛画", "c_m_fresco": "壁画组画", "c_m_print": "版画"};
+nodes.forEach(n=>{if(n.type==='work')return;n.full=n.type==='cat'?CC[n.cat][0]+'：'+n.label:n.type==='ctx'?CC[n.cat][0]+'：'+n.label+' —— '+CTX[n.id.slice(2)][2]:n.type==='ic'?n.label+'：'+IC[n.label]:n.type==='lit'?LIT[n.id.slice(2)].join(' —— '):n.label;n.label=SHORT[n.id]||n.label});
+let sim=null;
+const drawNet=()=>{const svgEl=document.getElementById('net');if(typeof d3==='undefined'){svgEl.parentNode.innerHTML='<p style="padding:20px">网络图需要的 d3 库没有加载，请用坐标图。</p>';return}
+ const svg=d3.select(svgEl),Wd=svgEl.clientWidth,H=svgEl.clientHeight;if(!Wd)return;svg.attr('viewBox',`0 0 ${Wd} ${H}`).selectAll('*').remove();
+ const L=links.filter(l=>on[l.t]&&(l.t!=='ctx'||onInt||l.lv==='doc')).map(l=>({...l,source:l.source.id||l.source,target:l.target.id||l.target}));
+ const used=new Set(L.flatMap(l=>[l.source,l.target]));const N=nodes.filter(n=>n.type==='work'||used.has(n.id)).map(n=>({...n}));
+ if(sim)sim.stop();
+ sim=d3.forceSimulation(N).force('link',d3.forceLink(L).id(d=>d.id).distance(l=>l.t==='form'?120:l.t==='mode'?230:l.t==='ctx'?170:180).strength(l=>l.t==='mode'?0.08:l.t==='ctx'?0.25:0.4)).force('charge',d3.forceManyBody().strength(d=>d.type==='work'?-900:-420).distanceMax(700)).force('center',d3.forceCenter(Wd/2,H/2)).force('collide',d3.forceCollide(d=>d.type==='work'?46:Math.min(95,12+[...d.label.slice(0,30)].reduce((s,c)=>s+(/[\u2e80-\uffff]/.test(c)?6.5:3.8),0))).strength(.9).iterations(2)).force('x',d3.forceX(Wd/2).strength(.025)).force('y',d3.forceY(H/2).strength(.035));
+ const g=svg.append('g');const zm=d3.zoom().scaleExtent([.25,3]).on('zoom',e=>g.attr('transform',e.transform));svg.call(zm);
+ const lk=g.append('g').selectAll('line').data(L).join('line').attr('stroke',d=>d.t==='ctx'?CC[d.cat][1]:ET[d.t][1]).attr('stroke-width',d=>d.t==='form'?2.5:1.4).attr('stroke-dasharray',d=>d.t==='ctx'?(d.lv==='int'?'5 4':''):ET[d.t][2]).attr('opacity',.7);
+ const nd=g.append('g').selectAll('g').data(N).join('g').style('cursor','pointer').call(d3.drag().on('start',(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y}).on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null}));
+ nd.filter(d=>d.type==='work').each(function(d){const s=d3.select(this),x=d.x0;s.append('clipPath').attr('id','cp'+x.n).append('circle').attr('r',22);s.append('circle').attr('r',25).attr('fill',GR[x.g][3]);s.append('image').attr('href','img/'+x.k+'.jpg').attr('x',-22).attr('y',-22).attr('width',44).attr('height',44).attr('preserveAspectRatio','xMidYMid slice').attr('clip-path',`url(#cp${x.n})`);s.append('text').text(x.n).attr('x',18).attr('y',-16).attr('font-size',13).attr('font-weight',700).attr('fill','currentColor').attr('paint-order','stroke').attr('stroke','var(--card)').attr('stroke-width',4);s.append('title').text(`${x.n} ${x.a}《${x.t}》`)});
+ nd.filter(d=>d.type!=='work').each(function(d){const s=d3.select(this);if(d.type==='cat'){const c=CC[d.cat][1];s.append('circle').attr('r',11).attr('fill',c).attr('stroke','var(--card)').attr('stroke-width',2.5);s.append('text').text(d.label).attr('x',16).attr('dy',4).attr('font-size',12.5).attr('font-weight',700).attr('fill',c).attr('paint-order','stroke').attr('stroke','var(--card)').attr('stroke-width',4);s.append('title').text(d.full);return}const col=d.type==='ctx'?CC[d.cat][1]:d.type==='mode'?'#6c6060':d.type==='ic'?'#1e465f':'#4a513b';const tx=s.append('text').text(d.label.length>16?d.label.slice(0,15)+'…':d.label).attr('font-size',12).attr('text-anchor','middle').attr('dy',4).attr('fill',col).attr('font-weight',700);const bb=tx.node().getBBox();s.insert('rect','text').attr('x',bb.x-6).attr('y',bb.y-3).attr('width',bb.width+12).attr('height',bb.height+6).attr('rx',d.type==='mode'?12:d.type==='ctx'?7:2).attr('fill','var(--bg)').attr('stroke',col);s.append('title').text(d.full)});
+ nd.on('click',(e,d)=>{if(d.type==='work')showCard(d.x0.n);else showTag(d);const ids=new Set([d.id]);L.forEach(l=>{if(l.source.id===d.id)ids.add(l.target.id);if(l.target.id===d.id)ids.add(l.source.id)});nd.attr('opacity',n=>ids.has(n.id)?1:.2);lk.attr('opacity',l=>l.source.id===d.id||l.target.id===d.id?1:.06)});
+ svg.on('dblclick.reset',()=>{nd.attr('opacity',1);lk.attr('opacity',.7)});
+ sim.on('tick',()=>{N.forEach(n=>{const mx=n.type==='work'?34:Math.min(110,14+[...n.label.slice(0,30)].reduce((s,c)=>s+(/[\u2e80-\uffff]/.test(c)?6.5:3.8),0)),my=n.type==='work'?34:16;n.x=Math.max(mx,Math.min(Wd-mx,n.x));n.y=Math.max(my,Math.min(H-my,n.y))});lk.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);nd.attr('transform',d=>`translate(${d.x},${d.y})`)});};
+// tabs
+const vb=[...document.querySelectorAll('[data-v]')];
+vb.forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.v;['net','grid','sc'].forEach(k=>document.getElementById('p-'+k).hidden=k!==v);vb.forEach(o=>o.setAttribute('aria-pressed',o===b));if(v==='net')drawNet();if(v==='sc')drawSc()}));
+// tables
+const SEGN={neck:'颈',sho_A:'肩A',sho_B:'肩B',uarm_A:'上臂A',uarm_B:'上臂B',farm_A:'前臂A',farm_B:'前臂B',thigh_A:'大腿A',thigh_B:'大腿B',calf_A:'小腿A',calf_B:'小腿B'};
+document.getElementById('tbl').innerHTML=`<thead><tr><th>#</th><th>人物</th><th>手眼距离</th><th>肘角</th><th>上臂抬高</th><th>手腕高出眼睛</th><th>脊柱倾斜</th><th>距远眺原型</th></tr></thead><tbody>${[...W].sort((a,b)=>dist(a.k)-dist(b.k)).map(x=>{const r=R[x.k];return `<tr><td>${x.n}</td><td>${x.a}</td><td>${f2(r.hand_eye)}</td><td>${f0(r.elbow)}</td><td>${f0(r.arm_elev)}</td><td>${f2(r.wrist_above_eye)}</td><td>${f0(r.spine_tilt)}</td><td>${dist(x.k).toFixed(2)}</td></tr>`}).join('')}</tbody>`;
+document.getElementById('tbl2').innerHTML=`<thead><tr><th>#</th><th>斯坦福式 11 角度</th>${Object.values(SEGN).map(v=>`<th>${v}</th>`).join('')}</tr></thead><tbody>${W.map(x=>`<tr><td>${x.n}</td><td>${x.a}</td>${Object.keys(SEGN).map(k=>`<td>${f0(R[x.k].vec[k])}</td>`).join('')}</tr>`).join('')}</tbody>`;
+if(document.readyState==='complete')drawNet();else addEventListener('load',drawNet);
+showCard(4);
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.22.0/tf.min.js"></script>
+<script>
+{
+const C='https://commons.wikimedia.org/wiki/File:';
+const W=[
+ {n:1,k:'a1_bronze_satyr',g:'apo',a:'伊特鲁里亚工匠',t:'带萨提尔的青铜双柄（其一）',d:'公元前 5 世纪早期，纽约大都会艺术博物馆',url:'https://www.metmuseum.org/art/collection/search/255956',w:'纯程式的古代源头。大都会博物馆的著录直接把这个手势称为 aposkopein，并说它是萨提尔的典型姿势。萨提尔是酒神队伍里的守望者：他张望的，常常是神的降临。'},
+ {n:2,k:'01_rembrandt_old_man',g:'apo',a:'伦勃朗',t:'手遮眼的老人',d:'约 1639 年，蚀刻版画',url:C+'Old_Man_Shading_His_Eyes_with_His_Hand_MET_DP814560.jpg',w:'没有叙事、只有手势的习作，作为第二个“纯程式”基准。他看什么，画面不说。'},
+ {n:3,k:'v2_veneziano_leo',g:'apo',a:'多梅尼科·韦内齐亚诺',t:'圣方济各领受圣痕（局部：利奥修士）',d:'约 1445 年，圣卢西亚祭坛画的预言板，华盛顿国家美术馆',url:C+'Domenico_Veneziano_-_The_Stigmatization_of_St_Francis_(predella_1)_-_WGA06432.jpg',w:'右上角的红色六翼天使，就是那个“不可见之物”。方济各在画面另一侧领受圣痕；陪伴他的利奥修士坐在地上，以手遮额仰望——他是这个奇迹的目击者。'},
+ {n:4,k:'v1_ghirlandaio_leo',g:'apo',a:'多梅尼科·吉兰达约',t:'圣方济各领受圣痕（局部：利奥修士）',d:'1483–1485 年，佛罗伦萨圣三一教堂萨塞蒂礼拜堂',url:C+'Cappella_Sassetti_Miracle_of_the_Stigmata.jpg',w:'同一题材四十年后，利奥修士的手势几乎原样重现（肘角 52°，与韦内齐亚诺的 65° 同属一区）。这座礼拜堂正是瓦尔堡研究过的萨塞蒂礼拜堂：程式在这里不是古代的余生，而是基督教异象的标准写法。'},
+ {n:5,k:'v3_bassano_shepherd',g:'apo',a:'雅各布·巴萨诺（传）',t:'天使向牧羊人报喜（局部）',d:'约 1555–1560 年，华盛顿国家美术馆',url:C+'The_Annunciation_to_the_Shepherds_sc147.jpg',w:'天使从光里俯冲而下，左下角的牧人双手压在额前。挡光与张望在这里合二为一：光太亮，而光里又有要看的东西。'},
+ {n:6,k:'06b_transfig_apostles',g:'apo',a:'拉斐尔',t:'基督显圣容（局部：塔波尔山上的使徒）',d:'1516–1520 年，梵蒂冈美术馆',url:C+'Transfiguration_Raphael.jpg',w:'山顶的使徒面对变容的基督以手遮光。山下的人群看不见这道光——同一幅画里，看见与看不见被上下分开。'},
+ {n:7,k:'b2_gaddi_shepherd',g:'bl',a:'塔代奥·加迪',t:'天使向牧羊人报喜（局部）',d:'约 1328–1330 年，佛罗伦萨圣十字教堂巴龙切利礼拜堂',url:C+'Taddeo_Gaddi_Shepherds.jpg',w:'和 5 号同一题材，身体却做了相反的事：牧人向后倒下，手掌张开迎向光，不遮也不挡。被光击中，而不是在光中张望。'},
+ {n:8,k:'05_caravaggio_paul',g:'bl',a:'卡拉瓦乔',t:'圣保罗皈依',d:'1601 年，罗马人民圣母堂',url:C+'Conversion_on_the_Way_to_Damascus-Caravaggio_(c.1600-1).jpg',w:'双臂伸直（肘角 170°）、身体倒成近水平：他看见了，却是闭着眼睛看见的。'},
+ {n:9,k:'07_bernini_teresa',g:'en',a:'贝尔尼尼',t:'圣特雷莎的狂喜',d:'1647–1652 年，罗马胜利之后圣母堂',url:C+'Ecstasy_of_Saint_Teresa_September_2015-2a.jpg',w:'手臂垂落、几乎伸直，手离眼睛最远。出神不是去看，而是被看见之物占据。'},
+ {n:10,k:'08_botticelli_annunciation',g:'en',a:'波提切利',t:'切斯泰洛天使报喜（马利亚）',d:'1489–1490 年，佛罗伦萨乌菲齐美术馆',url:C+'Botticelli,_Cestello_Annunciation,_1489,_Uffizi.jpg',w:'不可见之物降临时的“惊扰”：一手按胸，一手伸向天使，身体后缩。'},
+ {n:11,k:'10_ribera_jacob',g:'hd',a:'里贝拉',t:'雅各之梦',d:'1639 年，马德里普拉多博物馆',url:C+'Jos%C3%A9_de_Ribera_-_Jacob%27s_Dream_-_WGA19383.jpg',w:'以手托头而眠，天梯只是右上方一片光雾。手和眼一样近，但肘角只有 29°：异象在闭着的眼睛后面。'},
+ {n:12,k:'09_piero_constantine',g:'hd',a:'皮耶罗·德拉·弗朗切斯卡',t:'君士坦丁之梦（局部：床边的侍从）',d:'约 1458–1466 年，阿雷佐圣方济各教堂',url:C+'Piero_della_Francesca_-_4._Vision_of_Constantine_-_WGA17508.jpg',w:'测量的是醒着的侍从，而不是被被褥遮住的皇帝。天使就在头顶，他托着头，什么也没看见。'},
+ {n:13,k:'14_durer_melencolia',g:'hd',a:'丢勒',t:'忧郁 I',d:'1514 年，铜版画',url:C+'Albrecht_D%C3%BCrer,_Melencolia_I,_1514,_NGA_6640.jpg',w:'Iconclass 31A25311 的典型。看向一个不在画里的方向，是向内的想象。瓦尔堡在 1920 年论路德时代占卜的文章里讨论过这幅版画。'},
+ {n:14,k:'11_caravaggio_thomas',g:'far',a:'卡拉瓦乔',t:'多疑的多马',d:'1601–1602 年，波茨坦无忧宫画廊',url:C+'The_Incredulity_of_Saint_Thomas-Caravaggio_(1601-2).jpg',w:'不肯只用眼睛相信：手离开了眼睛，伸进伤口去确认。'},
+ {n:15,k:'12_titian_noli',g:'far',a:'提香',t:'不要碰我（抹大拉的马利亚）',d:'约 1514 年，伦敦国家美术馆',url:C+'Titian_-_Noli_me_Tangere_-_Google_Art_Project.jpg',w:'和 14 号相反：看得见，却不许碰，伸出的手停在半空。'},
+ {n:16,k:'15_bruegel_blind',g:'far',a:'老彼得·勃鲁盖尔',t:'盲人的寓言（局部：仰着脸的第三人）',d:'1568 年，那不勒斯卡波迪蒙特博物馆',url:C+'Pieter_Bruegel_the_Elder_-_The_Parable_of_the_Blind_Leading_the_Blind_-_WGA3511.jpg',w:'整块板的反极：他仰起脸，手却搭在前面那人的肩上。'}];
+const GR={apo:['Aposkopein','远眺','手举到额前，在眼睛上方投下阴影。1–2 是纯程式，3–6 是异象场景里的目击者。','#4a90e2'],bl:['Blendung','被光击中','不再张望：身体倒下，手臂张开迎向光。','#b9a042'],en:['Entrückung','出神与报喜','不可见之物降临到身上：身体后仰或后缩。','#796d90'],hd:['Caput in manu','以手托头','手同样贴着脸，但眼睛闭着或向下：梦与沉思。','#4d8885'],far:['Tasten · Blindheit','触摸与失明','手离开眼睛，去触摸、去试探。','#9f6544']};
+const IC={
+ '92L41':'萨提尔（泛称）','31D16':'老人','11H(FRANCIS)59':'圣方济各领受圣痕：在拉维尔纳山上见到为羽翼环绕的十字架上的基督',
+ '73B14':'夜间向牧羊人报告基督诞生，空中有天使歌唱','73C713':'基督显圣容：摩西与以利亚在塔波尔山上分立基督两侧',
+ '73F2212':'往大马士革路上基督向扫罗显现，扫罗坠马、被光照瞎','11HH(TERESA OF AVILA)37':'圣特雷莎冥想、出神',
+ '73A521':'天使报喜：马利亚站立','71C3121':'雅各之梦：枕石而睡，见天梯通天、天使上下',
+ '11H(CONSTANTINE)341':'君士坦丁米尔维安桥之战前的梦：天使持十字架预言胜利','32A14':'忧郁气质',
+ '73E364':'多马伸手触摸基督肋旁的伤口','73E31':'“不要碰我”：抹大拉的马利亚跪在扮作园丁的基督前','31A41111':'盲人引盲人（马太福音 15:14）'};
+const MODE={corp:['显现于肉眼','visio corporalis','本来不可见的东西取了可见的形，出现在画中空间，人用肉眼看见它'],
+ spir:['显现于想象','visio spiritualis','在梦、出神或沉思中以形象出现，身体的眼睛并没有看见'],
+ intel:['不可显现','visio intellectualis','理智之见不借任何形象，奥古斯丁视之为最高的看；在定义上画不出来'],
+ priv:['未能看见','privatio','在场却没有看见，或者失明（本研究补充的一行）'],
+ none:['纯程式','—','画面没有给出被看之物，只有姿势本身（本研究补充的一行）']};
+const A={
+ a1_bronze_satyr:{ic:'92L41',mode:'none',obj:'画面未给出（萨提尔常是酒神显现的守望者）',eye:'睁开',route:'机构命名',st:'核心例',ev:'文献',lit:['met','pliny']},
+ '01_rembrandt_old_man':{ic:'31D16',mode:'none',obj:'画面未给出',eye:'睁开，在手的阴影下',route:'标题检索（“手遮眼”）',st:'核心例',ev:'测量',lit:[]},
+ v2_veneziano_leo:{ic:'11H(FRANCIS)59',mode:'corp',obj:'六翼天使形的基督（右上角红色形象）',eye:'睁开，仰视',route:'题材检索',st:'核心例',ev:'测量 + 题材',lit:[]},
+ v1_ghirlandaio_leo:{ic:'11H(FRANCIS)59',mode:'corp',obj:'六翼天使形的基督（左上角）',eye:'睁开，仰视',route:'题材检索',st:'核心例',ev:'测量 + 题材 + 文献',lit:['sass','stan']},
+ v3_bassano_shepherd:{ic:'73B14',mode:'corp',obj:'报喜的天使与天上的光',eye:'被双手遮住',route:'题材检索',st:'核心例',ev:'测量 + 题材',lit:[]},
+ '06b_transfig_apostles':{ic:'73C713',mode:'corp',obj:'光中变容的基督',eye:'在手下，望向光',route:'艺术史判断',st:'核心例',ev:'测量 + 题材',lit:[]},
+ b2_gaddi_shepherd:{ic:'73B14',mode:'corp',obj:'报喜的天使与天上的光',eye:'睁开，仰视',route:'题材检索（作为对照）',st:'对照例',ev:'测量 + 题材',lit:[]},
+ '05_caravaggio_paul':{ic:'73F2212',mode:'corp',obj:'天上的光（基督的显现）',eye:'闭上',route:'艺术史判断',st:'对照例',ev:'题材',lit:[]},
+ '07_bernini_teresa':{ic:'11HH(TERESA OF AVILA)37',mode:'spir',obj:'持金箭的天使',eye:'半闭',route:'艺术史判断',st:'对照例',ev:'题材',lit:[]},
+ '08_botticelli_annunciation':{ic:'73A521',mode:'corp',obj:'天使加百列',eye:'低垂',route:'艺术史判断',st:'对照例',ev:'题材 + 文献',lit:['bax']},
+ '10_ribera_jacob':{ic:'71C3121',mode:'spir',obj:'通天的梯子与天使（梦中）',eye:'闭上',route:'艺术史判断',st:'对照例',ev:'测量 + 题材',lit:[]},
+ '09_piero_constantine':{ic:'11H(CONSTANTINE)341',mode:'priv',obj:'持十字架的天使（只出现在皇帝的梦里）',eye:'睁开，却未看见',route:'艺术史判断',st:'对照例',ev:'测量 + 题材',lit:[]},
+ '14_durer_melencolia':{ic:'32A14',mode:'spir',obj:'不在画中的方向（想象的对象）',eye:'睁开，凝视',route:'艺术史判断',st:'对照例',ev:'测量 + 文献',lit:['luth','pans']},
+ '11_caravaggio_thomas':{ic:'73E364',mode:'corp',obj:'复活基督的伤口',eye:'睁开，盯住伤口',route:'艺术史判断',st:'对照例',ev:'题材',lit:[]},
+ '12_titian_noli':{ic:'73E31',mode:'corp',obj:'复活的基督',eye:'睁开，仰视',route:'艺术史判断',st:'对照例',ev:'题材',lit:[]},
+ '15_bruegel_blind':{ic:'31A41111',mode:'priv',obj:'无（失明）',eye:'睁开而失明',route:'艺术史判断',st:'反极',ev:'题材',lit:[]}};
+
+
+const POSE={"a1_bronze_satyr": {"kp": [[128, 50], [128, 50], [128, 50], null, null, [103, 122], [181, 119], [37, 131], null, [94, 31], null, [120, 240], [170, 240], [130, 330], [165, 330], [130, 420], [150, 420]], "fig": "萨提尔", "vec": {"neck": 350.2063193233792, "sho_A": 269.23548754563785, "sho_B": 89.23548754563785, "uarm_A": 263.6729196889783, "uarm_B": null, "farm_A": 31.121225886526986, "farm_B": null, "thigh_A": 190.9004079154293, "thigh_B": 168.90927799825215, "calf_A": 181.43808570740367, "calf_B": 190.9004079154293}, "f": {"hand_eye": 0.214, "elbow": 52.552, "arm_elev": 83.673, "wrist_above_eye": 0.109, "head_tilt": 9.794, "spine_tilt": 1}}, "01_rembrandt_old_man": {"kp": [[373, 300], [373, 300], [373, 300], null, null, [300, 473], [491, 455], null, [582, 473], null, [455, 291], null, null, null, null, null, null], "fig": "老人（半身）", "vec": {"neck": 7.8119317102681975, "sho_A": 275.38370167681177, "sho_B": 95.38370167681177, "uarm_A": 258.8112000717482, "uarm_B": null, "farm_A": 34.90741962583979, "farm_B": null, "thigh_A": null, "thigh_B": null, "calf_A": null, "calf_B": null}, "f": {"hand_eye": 0.262, "elbow": 43.904, "arm_elev": 78.811, "wrist_above_eye": 0.029, "head_tilt": 7.812, "spine_tilt": null}}, "06b_transfig_apostles": {"kp": [[505, 60], [505, 60], [505, 60], null, null, [488, 90], [530, 83], [457, 67], [588, 108], [480, 54], [634, 102], [505, 154], [505, 154], [418, 183], null, null, null], "fig": "山顶右侧的使徒", "vec": {"neck": 348.0250391000897, "sho_A": 257.14633837217804, "sho_B": 77.14633837217804, "uarm_A": 303.181691558723, "uarm_B": 109.92636896695872, "farm_A": 57.1327715769579, "farm_B": 79.17725260903114, "thigh_A": 248.17371175728164, "thigh_B": null, "calf_A": null, "calf_B": null}, "f": {"hand_eye": 0.395, "elbow": 66.049, "arm_elev": 123.182, "wrist_above_eye": 0.069, "head_tilt": 11.975, "spine_tilt": 3}}, "05_caravaggio_paul": {"kp": [[326, 529], [326, 529], [326, 529], null, null, [218, 497], [359, 491], [150, 421], [400, 426], [135, 376], [424, 368], [147, 509], [147, 509], [71, 444], null, [24, 491], null], "fig": "保罗", "vec": {"neck": 310.92377556548905, "sho_A": 356.38548980141724, "sho_B": 176.38548980141724, "uarm_A": 51.70637371548378, "uarm_B": 125.76901143474288, "farm_A": 61.46940715750395, "farm_B": 102.38379037752912, "thigh_A": null, "thigh_B": 133.40968981312363, "calf_A": null, "calf_B": 218.9488415546071}, "f": {"hand_eye": 1.35, "elbow": 170.237, "arm_elev": 128.294, "wrist_above_eye": 0.82, "head_tilt": 49.076, "spine_tilt": 84}}, "07_bernini_teresa": {"kp": [[370, 200], [370, 200], [370, 200], null, null, [327, 267], [393, 280], null, [360, 353], null, [360, 420], [327, 400], [327, 400], [280, 447], null, [300, 567], null], "fig": "特雷莎", "vec": {"neck": 6.873101952523541, "sho_A": 273.4779841302923, "sho_B": 93.47798413029233, "uarm_A": 170.29529874950555, "uarm_B": null, "farm_A": 194.62087398863164, "farm_B": null, "thigh_A": null, "thigh_B": 149.62087398863164, "calf_A": null, "calf_B": 204.08319619665727}, "f": {"hand_eye": 1.497, "elbow": 155.674, "arm_elev": 9.705, "wrist_above_eye": -1.464, "head_tilt": 6.873, "spine_tilt": 15}}, "08_botticelli_annunciation": {"kp": [[468, 131], [468, 131], [468, 131], null, null, [468, 200], [538, 185], [438, 254], [561, 246], [403, 288], [522, 238], [507, 346], [561, 346], [507, 431], [568, 431], [476, 531], [522, 538]], "fig": "马利亚", "vec": {"neck": 18.226886842709064, "sho_A": 270.677193334143, "sho_B": 90.677193334143, "uarm_A": 189.2413463204384, "uarm_B": 139.52783215805374, "farm_A": 66.99026084683982, "farm_B": 122.75212077087289, "thigh_A": 190.3838457434827, "thigh_B": 150.96013902846263, "calf_A": 145.3192507544879, "calf_B": 151.35900006599942}, "f": {"hand_eye": 1.141, "elbow": 57.749, "arm_elev": 9.241, "wrist_above_eye": -1.101, "head_tilt": 18.227, "spine_tilt": 11}}, "09_piero_constantine": {"kp": [[120, 420], [120, 420], [120, 420], null, null, [98, 433], [130, 435], [85, 480], [154, 448], [139, 493], [130, 422], [100, 493], [130, 493], [100, 533], [157, 528], [107, 567], [170, 565]], "fig": "床边的侍从（醒着）", "vec": {"neck": 335.83038755527264, "sho_A": 265.45264369392345, "sho_B": 85.45264369392345, "uarm_A": 240.5860494445575, "uarm_B": 163.56776032847893, "farm_A": 41.738368026282274, "farm_B": 255.49312169978657, "thigh_A": 229.2234069766556, "thigh_B": 158.47293284933735, "calf_A": 198.38797224461553, "calf_B": 190.66261206786126}, "f": {"hand_eye": 0.163, "elbow": 18.848, "arm_elev": 60.586, "wrist_above_eye": -0.035, "head_tilt": 24.17, "spine_tilt": 1}}, "10_ribera_jacob": {"kp": [[575, 320], [575, 320], [575, 320], null, null, [470, 330], [540, 345], [450, 420], [590, 455], [495, 465], [598, 360], [340, 410], [340, 410], [230, 440], [230, 490], [115, 460], [150, 520]], "fig": "雅各", "vec": {"neck": 350.31584789562186, "sho_A": 324.1848473506833, "sho_B": 144.1848473506833, "uarm_A": 270.72355920811196, "uarm_B": 233.75079671854388, "farm_A": 61.466053533988884, "farm_B": 291.2796044276954, "thigh_A": 192.306977812799, "thigh_B": 171.5347231307532, "calf_A": 176.83564964727887, "calf_B": 166.1454113707798}, "f": {"hand_eye": 0.213, "elbow": 29.258, "arm_elev": 90.724, "wrist_above_eye": 0.023, "head_tilt": 9.684, "spine_tilt": 66}}, "11_caravaggio_thomas": {"kp": [[355, 280], [355, 280], [355, 280], null, null, [420, 320], [560, 290], [330, 355], [640, 410], [290, 345], [590, 470], [520, 540], [520, 540], null, null, null, null], "fig": "多马", "vec": {"neck": 287.76648197022087, "sho_A": 265.1802478808772, "sho_B": 85.18024788087718, "uarm_A": 256.024499450756, "uarm_B": 153.5849374319095, "farm_A": 291.31124842581573, "farm_B": 227.08057605015446, "thigh_A": null, "thigh_B": null, "calf_A": null, "calf_B": null}, "f": {"hand_eye": 0.667, "elbow": 144.713, "arm_elev": 76.024, "wrist_above_eye": -0.408, "head_tilt": 72.234, "spine_tilt": 7}}, "12_titian_noli": {"kp": [[247, 400], [247, 400], [247, 400], null, null, [242, 425], [270, 425], [217, 455], [265, 500], [200, 440], [270, 550], [335, 510], [335, 510], [315, 540], null, [460, 535], null], "fig": "抹大拉的马利亚", "vec": {"neck": 23.105871080851273, "sho_A": 312.9047474353762, "sho_B": 132.90474743537618, "uarm_A": 262.71031852764133, "uarm_B": 226.71882226966653, "farm_A": 354.3284130603788, "farm_B": 217.19415429787654, "thigh_A": 256.59481496135595, "thigh_B": null, "calf_A": 130.92981342449423, "calf_B": null}, "f": {"hand_eye": 1.0, "elbow": 88.382, "arm_elev": 82.71, "wrist_above_eye": 0.044, "head_tilt": 23.106, "spine_tilt": 43}}, "14_durer_melencolia": {"kp": [[333, 233], [333, 233], [333, 233], null, null, [317, 280], [370, 280], [310, 327], [340, 353], [293, 350], [350, 257], [350, 380], [350, 380], [283, 400], [337, 420], [310, 527], [350, 533]], "fig": "忧郁", "vec": {"neck": 8.87433598294507, "sho_A": 266.28100602684196, "sho_B": 86.28100602684196, "uarm_A": 153.94035806684784, "uarm_B": 167.80986139382713, "farm_A": 350.33414297286845, "farm_B": 139.8117716367901, "thigh_A": 158.2768444209286, "thigh_B": 102.90176294073405, "calf_A": 182.8437045357794, "calf_B": 188.28330092562567}, "f": {"hand_eye": 0.168, "elbow": 16.394, "arm_elev": 26.06, "wrist_above_eye": -0.143, "head_tilt": 8.874, "spine_tilt": 4}}, "15_bruegel_blind": {"kp": [[296, 97], [296, 97], [296, 97], null, null, [269, 128], [317, 133], [228, 183], [333, 161], [222, 228], [358, 144], [261, 239], [261, 239], [261, 283], [286, 294], [267, 317], [283, 328]], "fig": "仰着脸的第三个盲人", "vec": {"neck": 11.3151008411225, "sho_A": 280.4855526371216, "sho_B": 100.4855526371216, "uarm_A": 226.17729698803734, "uarm_B": 159.72956066093198, "farm_A": 320.6481178235325, "farm_B": 188.8377723225037, "thigh_A": 220.87637047151165, "thigh_B": 196.43241569109512, "calf_A": 191.3899646219242, "calf_B": 206.44039549253642}, "f": {"hand_eye": 1.245, "elbow": 85.529, "arm_elev": 46.177, "wrist_above_eye": -0.441, "head_tilt": 11.315, "spine_tilt": 16}}, "v1_ghirlandaio_leo": {"kp": [[123, 377], [123, 377], [123, 377], null, null, [108, 404], [150, 390], [100, 479], [179, 340], [83, 550], [123, 348], [162, 475], [162, 475], [146, 567], [208, 550], [237, 567], [267, 571]], "fig": "利奥修士", "vec": {"neck": 353.76714379640384, "sho_A": 265.50284838533224, "sho_B": 85.50284838533224, "uarm_A": 306.95416641142776, "uarm_B": 150.97937140821506, "farm_A": 75.19800191656617, "farm_B": 143.6026914675985, "thigh_A": 188.5900768091689, "thigh_B": 147.20209261932587, "calf_A": 227.4756176713587, "calf_B": 247.06789956241022}, "f": {"hand_eye": 0.254, "elbow": 51.756, "arm_elev": 126.954, "wrist_above_eye": 0.234, "head_tilt": 6.233, "spine_tilt": 23}}, "v2_veneziano_leo": {"kp": [[265, 280], [265, 280], [265, 280], null, null, [245, 325], [295, 320], [205, 285], [325, 390], [260, 265], [345, 465], [265, 435], [265, 435], [200, 460], [260, 475], [95, 505], [175, 502]], "fig": "利奥修士", "vec": {"neck": 350.74535881242997, "sho_A": 261.74460248268724, "sho_B": 81.74460248268727, "uarm_A": 312.4551956201869, "uarm_B": 154.25660510653873, "farm_A": 67.47208909828693, "farm_B": 162.52377844204938, "thigh_A": 246.4176845947651, "thigh_B": 184.5802119690887, "calf_A": 244.25660510653873, "calf_B": 249.83289839151863}, "f": {"hand_eye": 0.137, "elbow": 64.983, "arm_elev": 132.455, "wrist_above_eye": 0.128, "head_tilt": 9.255, "spine_tilt": 3}}, "v3_bassano_shepherd": {"kp": [[81, 377], [81, 377], [81, 377], null, null, [37, 437], [96, 442], null, [196, 438], null, [112, 371], null, null, null, null, null, null], "fig": "左下角的牧人", "vec": {"neck": 346.93844891667186, "sho_A": 265.15599962491933, "sho_B": 85.15599962491933, "uarm_A": 272.2906100426385, "uarm_B": null, "farm_A": 51.423470436556556, "farm_B": null, "thigh_A": null, "thigh_B": null, "calf_A": null, "calf_B": null}, "f": {"hand_eye": 0.152, "elbow": 40.867, "arm_elev": 92.291, "wrist_above_eye": 0.029, "head_tilt": 13.062, "spine_tilt": null}}, "b2_gaddi_shepherd": {"kp": [[391, 257], [391, 257], [391, 257], null, null, [350, 320], [450, 275], [286, 375], [477, 239], [318, 402], [495, 152], [514, 384], [514, 384], [623, 420], [623, 448], [723, 393], [732, 430]], "fig": "被光击倒的牧人", "vec": {"neck": 319.7190138532406, "sho_A": 241.41795146204325, "sho_B": 61.41795146204322, "uarm_A": 270.320308498245, "uarm_B": 77.8651457093506, "farm_A": 295.5008369686499, "farm_B": 177.03420651916974, "thigh_A": 186.77062654129284, "thigh_B": 198.91309653486894, "calf_A": 226.56726683839344, "calf_B": 232.29978126642953}, "f": {"hand_eye": 1.104, "elbow": 154.819, "arm_elev": 90.32, "wrist_above_eye": -0.145, "head_tilt": 40.281, "spine_tilt": 53}}};
+
+const $=id=>document.getElementById(id);
+// ---------- pose math (same as archive) ----------
+const mid=(a,b)=>!a?b:!b?a:[(a[0]+b[0])/2,(a[1]+b[1])/2];
+const ang=v=>((Math.atan2(v[0],-v[1])*180/Math.PI)+360)%360;
+const SEGS=[['spine','P','N'],['neck','N','H'],['sho_A','N','shoA'],['sho_B','N','shoB'],['uarm_A','shoA','elbA'],['uarm_B','shoB','elbB'],['farm_A','elbA','wriA'],['farm_B','elbB','wriB'],['thigh_A','P','kneA'],['thigh_B','P','kneB'],['calf_A','kneA','ankA'],['calf_B','kneB','ankB']];
+const ASEG=SEGS.map(s=>s[0]).filter(s=>s!=='spine');
+const named=kp=>{const g=i=>kp[i]||null;const eyes=mid(g(1),g(2));const p={H:eyes||g(0),eyes,N:mid(g(5),g(6)),P:mid(g(11),g(12))};
+ let lh=true;const wl=g(9),wr=g(10);if(wl&&wr)lh=wl[1]<=wr[1];else if(wr&&!wl)lh=false;
+ const I={L:{sho:5,elb:7,wri:9,kne:13,ank:15},R:{sho:6,elb:8,wri:10,kne:14,ank:16}};
+ (lh?['L','R']:['R','L']).forEach((s,j)=>{const t='AB'[j];for(const[k,i]of Object.entries(I[s]))p[k+t]=g(i)});return p};
+const vecOf=kp=>{const p=named(kp);const spine=p.P&&p.N?ang([p.N[0]-p.P[0],p.N[1]-p.P[1]]):0;const raw={};
+ SEGS.forEach(([n,a,b])=>{const A=p[a],B=p[b];raw[n]=A&&B?((ang([B[0]-A[0],B[1]-A[1]])-spine)%360+360)%360:null});
+ const ref=raw.sho_A!=null?raw.sho_A:raw.uarm_A;const mir=ref!=null&&ref>0&&ref<180;const v={};ASEG.forEach(k=>v[k]=raw[k]==null?null:(mir?(360-raw[k])%360:raw[k]));return v};
+const vang=(u,v)=>{const nu=Math.hypot(...u),nv=Math.hypot(...v);if(!nu||!nv)return null;return Math.acos(Math.max(-1,Math.min(1,(u[0]*v[0]+u[1]*v[1])/(nu*nv))))*180/Math.PI};
+const featOf=kp=>{const p=named(kp);const f={hand_eye:null,elbow:null,arm_elev:null,wrist_above_eye:null};const sho=p.shoA,elb=p.elbA,wri=p.wriA,eye=p.eyes||p.H;
+ const sv=p.P&&p.N?[p.N[0]-p.P[0],p.N[1]-p.P[1]]:[0,-1];
+ if(sho&&elb)f.arm_elev=vang([elb[0]-sho[0],elb[1]-sho[1]],[-sv[0],-sv[1]]);
+ if(sho&&elb&&wri){f.elbow=vang([sho[0]-elb[0],sho[1]-elb[1]],[wri[0]-elb[0],wri[1]-elb[1]]);const L=Math.hypot(elb[0]-sho[0],elb[1]-sho[1])+Math.hypot(wri[0]-elb[0],wri[1]-elb[1]);
+  if(eye&&L){f.hand_eye=Math.hypot(wri[0]-eye[0],wri[1]-eye[1])/L;const n=Math.hypot(...sv)||1;f.wrist_above_eye=((wri[0]-eye[0])*sv[0]+(wri[1]-eye[1])*sv[1])/n/L}}return f};
+const unit=v=>{const L={neck:.35,sho_A:.32,sho_B:.32,uarm_A:.55,uarm_B:.55,farm_A:.5,farm_B:.5,thigh_A:.85,thigh_B:.85,calf_A:.85,calf_B:.85};const pts={P:[0,0],N:[0,-1]},segs={spine:[[0,0],[0,-1]]};
+ [['neck','N','H'],['sho_A','N','shoA'],['sho_B','N','shoB'],['uarm_A','shoA','elbA'],['uarm_B','shoB','elbB'],['farm_A','elbA','wriA'],['farm_B','elbB','wriB'],['thigh_A','P','kneA'],['thigh_B','P','kneB'],['calf_A','kneA','ankA'],['calf_B','kneB','ankB']].forEach(([n,a,b])=>{if(!pts[a]||v[n]==null)return;const r=v[n]*Math.PI/180;pts[b]=[pts[a][0]+L[n]*Math.sin(r),pts[a][1]-L[n]*Math.cos(r)];segs[n]=[pts[a],pts[b]]});return segs};
+const skSvg=(v,cls='')=>{const s=unit(v);let xs=[],ys=[];Object.values(s).forEach(([a,b])=>{xs.push(a[0],b[0]);ys.push(a[1],b[1])});const x0=Math.min(...xs)-.3,x1=Math.max(...xs)+.3,y0=Math.min(...ys)-.3,y1=Math.max(...ys)+.3;
+ return `<svg viewBox="${x0} ${y0} ${x1-x0} ${y1-y0}" aria-hidden="true">${Object.entries(s).map(([n,[a,b]])=>`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${n.endsWith('_A')?'#6cc070':n.endsWith('_B')?'#4a90e2':'#f2f2f2'}" stroke-width="0.09" stroke-linecap="round"/>`).join('')}${s.neck?`<circle cx="${s.neck[1][0]}" cy="${s.neck[1][1]}" r="0.08" fill="#f2f2f2"/>`:''}</svg>`};
+// ---------- distances ----------
+const FW={elbow:30,hand_eye:.3,arm_elev:60,wrist_above_eye:.3};
+const dFeat=(a,b)=>{let s=0,n=0;for(const[k,w]of Object.entries(FW)){if(a[k]==null||b[k]==null)continue;s+=((a[k]-b[k])/w)**2;n++}return n<2?Infinity:Math.sqrt(s/n)};
+const dStan=(a,b)=>{let s=0,n=0;for(const k of ASEG){if(a[k]==null||b[k]==null)continue;const d=Math.abs(a[k]-b[k]);s+=Math.min(d,360-d);n++}return n<4?Infinity:(s/n)/45};
+const HB=f=>f.hand_eye==null?'—':f.hand_eye<0.45&&f.wrist_above_eye>0&&f.elbow>35?'手在眉上':f.hand_eye<0.45&&f.elbow<=35?'手托着头':f.elbow>120&&f.arm_elev>80?'手臂迎向上方':'手离开眼睛';
+// ---------- doll ----------
+const J=['head','sL','sR','eL','eR','wL','wR','hL','hR','kL','kR','aL','aR'];
+const toKP=q=>{const k=Array(17).fill(null);k[0]=k[1]=k[2]=q.head;[['sL',5],['sR',6],['eL',7],['eR',8],['wL',9],['wR',10],['hL',11],['hR',12],['kL',13],['kR',14],['aL',15],['aR',16]].forEach(([j,i])=>k[i]=q[j]);return k};
+const PRE={
+ '远眺':{head:[150,78],sL:[120,118],sR:[180,118],eL:[78,108],eR:[188,190],wL:[128,66],wR:[176,250],hL:[132,230],hR:[168,230],kL:[128,305],kR:[172,305],aL:[124,375],aR:[178,375]},
+ '以手托头':{head:[150,95],sL:[120,135],sR:[180,135],eL:[112,230],eR:[200,200],wL:[132,112],wR:[160,235],hL:[132,250],hR:[168,250],kL:[110,300],kR:[190,300],aL:[118,375],aR:[184,375]},
+ '张臂迎光':{head:[150,80],sL:[120,120],sR:[180,120],eL:[92,70],eR:[208,70],wL:[70,22],wR:[230,22],hL:[132,232],hR:[168,232],kL:[126,305],kR:[176,305],aL:[120,375],aR:[182,375]},
+ '伸手触摸':{head:[132,92],sL:[118,130],sR:[176,128],eL:[78,170],eR:[196,205],wL:[38,180],wR:[184,262],hL:[150,240],hR:[184,240],kL:[134,310],kR:[190,312],aL:[128,378],aR:[196,378]},
+ '站立':{head:[150,78],sL:[120,118],sR:[180,118],eL:[112,182],eR:[188,182],wL:[110,244],wR:[190,244],hL:[132,230],hR:[168,230],kL:[130,305],kR:[170,305],aL:[128,375],aR:[172,375]}};
+let Q=JSON.parse(JSON.stringify(PRE['远眺']));
+const doll=$('doll');
+const drawDoll=()=>{const L=[['sL','sR'],['sL','eL'],['eL','wL'],['sR','eR'],['eR','wR'],['hL','hR'],['hL','kL'],['kL','aL'],['hR','kR'],['kR','aR']];const N=mid(Q.sL,Q.sR),P=mid(Q.hL,Q.hR);
+ doll.innerHTML=`<line x1="${N[0]}" y1="${N[1]}" x2="${P[0]}" y2="${P[1]}" stroke="#f2f2f2" stroke-width="4" stroke-linecap="round"/><line x1="${N[0]}" y1="${N[1]}" x2="${Q.head[0]}" y2="${Q.head[1]}" stroke="#f2f2f2" stroke-width="4" stroke-linecap="round"/>`+L.map(([a,b])=>`<line x1="${Q[a][0]}" y1="${Q[a][1]}" x2="${Q[b][0]}" y2="${Q[b][1]}" stroke="#f2f2f2" stroke-width="4" stroke-linecap="round"/>`).join('')+J.map(j=>`<circle class="joint" data-j="${j}" cx="${Q[j][0]}" cy="${Q[j][1]}" r="${j==='head'?15:11}" fill="${j==='head'?'#0e0d0c':j.endsWith('L')?'#6cc070':'#4a90e2'}" stroke="#ffffff" stroke-width="${j==='head'?4:2.5}"/>`).join('')};
+let drag=null;
+const pt=e=>{const r=doll.getBoundingClientRect(),s=Math.min(r.width/300,r.height/400),ox=(r.width-300*s)/2,oy=(r.height-400*s)/2;return[Math.max(5,Math.min(295,(e.clientX-r.left-ox)/s)),Math.max(5,Math.min(395,(e.clientY-r.top-oy)/s))]};
+doll.addEventListener('pointerdown',e=>{const c=e.target.closest('.joint');if(!c)return;drag=c.dataset.j;doll.setPointerCapture(e.pointerId)});
+doll.addEventListener('pointermove',e=>{if(!drag)return;Q[drag]=pt(e);drawDoll();run()});
+doll.addEventListener('pointerup',()=>drag=null);
+$('presets').innerHTML='<span class="m" style="align-self:center">预设</span>'+Object.keys(PRE).map(k=>`<button data-p="${k}">${k}</button>`).join('');
+$('presets').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{Q=JSON.parse(JSON.stringify(PRE[b.dataset.p]));useDoll();drawDoll();run()}));
+// ---------- query state ----------
+let mode='doll',photoKP=null,metric='feat';
+const useDoll=()=>{if(window.__stopCam)window.__stopCam();mode='doll';$('photo').hidden=true;doll.style.display='';document.querySelector('#emb [data-in=doll]').setAttribute('aria-pressed',true);$('status').textContent='拖动关节摆出姿势，结果会即时更新。'};
+document.querySelector('#emb [data-in=doll]').addEventListener('click',()=>{useDoll();run()});
+document.querySelectorAll('#emb [data-mt]').forEach(b=>b.addEventListener('click',()=>{metric=b.dataset.mt;document.querySelectorAll('#emb [data-mt]').forEach(o=>o.setAttribute('aria-pressed',o===b));run()}));
+const ARCH=W.map(x=>({...x,p:POSE[x.k],a2:A[x.k]}));
+const run=()=>{const kp=mode==='doll'?toKP(Q):photoKP;if(!kp)return;const v=vecOf(kp),f=featOf(kp);
+ const sc=ARCH.map(x=>{const df=dFeat(f,x.p.f),ds=dStan(v,x.p.vec);const d=metric==='feat'?df:metric==='stan'?ds:(isFinite(df)&&isFinite(ds)?(df+ds)/2:Math.min(df,ds));return{x,d}}).filter(r=>isFinite(r.d)).sort((a,b)=>a.d-b.d);
+ const top=sc.slice(0,6);const modes={};top.slice(0,3).forEach(r=>{const m=MODE[r.x.a2.mode][0];modes[m]=(modes[m]||0)+1});const dom=Object.entries(modes).sort((a,b)=>b[1]-a[1])[0];
+ $('me').innerHTML=`${skSvg(v)}<div><strong>你的姿势：${HB(f)}</strong><p class="m" style="margin:2px 0">肘角 ${f.elbow==null?'—':Math.round(f.elbow)+'°'} · 手眼距离 ${f.hand_eye==null?'—':f.hand_eye.toFixed(2)} · 手腕高出眼睛 ${f.wrist_above_eye==null?'—':f.wrist_above_eye.toFixed(2)}</p><p style="margin:0;font-size:14.5px">${dom?`在档案里，最像你的三个人物多半属于“${dom[0]}”。`:''}</p></div>`;
+ const max=Math.max(...top.map(r=>r.d),1);
+ $('res').innerHTML=top.map((r,i)=>{const x=r.x;return `<div class="r"><div class="pic"><img src="img/${x.k}.jpg" alt="">${skSvg(x.p.vec)}</div><div><h3><b>${x.n}</b> ${x.a}《${x.t}》</h3><div class="meter" title="相似度"><i style="width:${Math.max(6,100-r.d/max*85)}%"></i></div><p>不可见之物：${x.a2.obj}</p><p class="m">${MODE[x.a2.mode][0]} · ${HB(x.p.f)}</p><button class="use" data-k="${x.k}">用这个姿势</button></div></div>`}).join('');
+ $('res').querySelectorAll('.use').forEach(b=>b.addEventListener('click',()=>loadArchive(b.dataset.k)));};
+// load an archive pose onto the doll (fit into the 300×400 box)
+const loadArchive=k=>{const kp=POSE[k].kp;const pts=kp.filter(Boolean);const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);const s=Math.min(240/(x1-x0||1),340/(y1-y0||1));
+ const tr=p=>p?[150+(p[0]-(x0+x1)/2)*s,200+(p[1]-(y0+y1)/2)*s]:null;const m=[['head',1],['sL',5],['sR',6],['eL',7],['eR',8],['wL',9],['wR',10],['hL',11],['hR',12],['kL',13],['kR',14],['aL',15],['aR',16]];
+ const N=tr(mid(kp[5],kp[6])),Pp=tr(mid(kp[11],kp[12]))||[N[0],N[1]+110];
+ const fill={sL:[N[0]-30,N[1]],sR:[N[0]+30,N[1]],eL:[N[0]-38,N[1]+60],eR:[N[0]+38,N[1]+60],wL:[N[0]-40,N[1]+120],wR:[N[0]+40,N[1]+120],hL:[Pp[0]-18,Pp[1]],hR:[Pp[0]+18,Pp[1]],kL:[Pp[0]-20,Pp[1]+75],kR:[Pp[0]+20,Pp[1]+75],aL:[Pp[0]-22,Pp[1]+145],aR:[Pp[0]+22,Pp[1]+145],head:[N[0],N[1]-40]};
+ m.forEach(([j,i])=>Q[j]=tr(kp[i])||fill[j]);Object.keys(Q).forEach(j=>Q[j]=[Math.max(8,Math.min(292,Q[j][0])),Math.max(8,Math.min(392,Q[j][1]))]);
+ useDoll();drawDoll();run();$('status').textContent=`已载入 ${W.find(w=>w.k===k).a} 的姿势（被遮挡的关节用默认位置补上），可以继续拖动修改。`;};
+// ---------- photo ----------
+let model=null;
+const loadModel=async()=>{if(model)return model;if(typeof tf==='undefined')throw new Error('tf');$('status').textContent='正在载入姿态识别模型（约 5 MB，只需一次）…';model=await tf.loadGraphModel("https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/movenet-lightning.json");return model};
+$('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.src=URL.createObjectURL(f);await img.decode();
+ try{const m=await loadModel();$('status').textContent='识别中…';const S=Math.max(img.width,img.height);const c=document.createElement('canvas');c.width=c.height=192;const g=c.getContext('2d');g.fillStyle='#000';g.fillRect(0,0,192,192);const w=img.width/S*192,h=img.height/S*192;g.drawImage(img,(192-w)/2,(192-h)/2,w,h);
+  const out=tf.tidy(()=>m.execute(tf.browser.fromPixels(c).toInt().expandDims(0)));const a=(await out.array())[0][0];out.dispose();
+  const px=(192-w)/2/192,py=(192-h)/2/192,sx=w/192,sy=h/192;let ok=0;
+  photoKP=a.map(([y,x,s])=>{if(s<0.25)return null;ok++;return[((x-px)/sx)*img.width,((y-py)/sy)*img.height]});
+  const cv=$('photo');cv.width=img.width;cv.height=img.height;const cg=cv.getContext('2d');cg.drawImage(img,0,0);cg.lineWidth=Math.max(3,img.width/150);cg.strokeStyle='#f2f2f2';cg.fillStyle='#6cc070';
+  [[5,6],[5,7],[7,9],[6,8],[8,10],[11,12],[5,11],[6,12],[11,13],[13,15],[12,14],[14,16]].forEach(([i,j])=>{if(photoKP[i]&&photoKP[j]){cg.beginPath();cg.moveTo(...photoKP[i]);cg.lineTo(...photoKP[j]);cg.stroke()}});photoKP.forEach(p=>{if(p){cg.beginPath();cg.arc(p[0],p[1],cg.lineWidth*1.4,0,7);cg.fill()}});
+  mode='photo';cv.hidden=false;doll.style.display='none';document.querySelector('#emb [data-in=doll]').setAttribute('aria-pressed',false);
+  $('status').textContent=ok<8?`只识别到 ${ok} 个关节，结果可能不准。试试全身入镜、光线充足的照片。`:`识别到 ${ok} 个关节。照片只在你的浏览器里处理，不会上传。`;run();
+ }catch(err){$('status').textContent='这个环境里无法运行姿态识别模型，请改用木偶。'}
+ e.target.value='';});
+// ---------- live camera ----------
+{const btn=$('cam'),vid=document.createElement('video');vid.playsInline=true;vid.muted=true;let stream=null,on=false,last=0,busy=false,liveKP=null,liveOK=0;const okb=$('camok');okb.addEventListener('click',()=>{if(!liveKP||liveOK<5){$('status').textContent='还没识别到人，请站到镜头前。';return}photoKP=liveKP.map(p=>p&&[...p]);run();$('status').textContent='已按这个姿势检索。换个姿势后再点“确认这个姿势”。'});
+ const box=document.createElement('canvas');box.width=box.height=192;const bg=box.getContext('2d');
+ const stop=()=>{on=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}btn.textContent='打开摄像头';btn.setAttribute('aria-pressed','false');okb.hidden=true};window.__stopCam=stop;
+ const tick=async()=>{if(!on)return;const w=vid.videoWidth,h=vid.videoHeight;
+  if(w&&!busy){busy=true;try{const S=Math.max(w,h),dw=w/S*192,dh=h/S*192,ox=(192-dw)/2,oy=(192-dh)/2;bg.fillStyle='#000';bg.fillRect(0,0,192,192);bg.drawImage(vid,ox,oy,dw,dh);
+   const out=tf.tidy(()=>model.execute(tf.browser.fromPixels(box).toInt().expandDims(0)));const a=await out.array();out.dispose();let ok=0;
+   const kp=a[0][0].map(([y,x,sc])=>{if(sc<0.3)return null;ok++;return[w-((x*192-ox)/dw)*w,((y*192-oy)/dh)*h]});
+   const cv=$('photo');if(cv.width!==w){cv.width=w;cv.height=h}const g=cv.getContext('2d');g.save();g.translate(w,0);g.scale(-1,1);g.drawImage(vid,0,0,w,h);g.restore();
+   const lw=Math.max(3,w/160);g.lineWidth=lw;g.lineCap='round';g.strokeStyle='#f2f2f2';
+   [[5,6],[5,7],[7,9],[6,8],[8,10],[11,12],[5,11],[6,12],[11,13],[13,15],[12,14],[14,16]].forEach(([i,j])=>{if(kp[i]&&kp[j]){g.beginPath();g.moveTo(...kp[i]);g.lineTo(...kp[j]);g.stroke()}});
+   kp.forEach((p,i)=>{if(!p||i<5)return;g.beginPath();g.arc(p[0],p[1],lw*1.6,0,7);g.fillStyle='#fff';g.fill();g.beginPath();g.arc(p[0],p[1],lw*1.1,0,7);g.fillStyle=i%2?'#6cc070':'#4a90e2';g.fill()});
+   liveKP=kp;liveOK=ok;const now=performance.now();if(now-last>400){last=now;$('status').textContent=ok<7?`只看到 ${n} 个关节，请退后一点，让上半身完整入镜。`.replace('${n}',ok):`实时识别中：${n} 个关节。摆好姿势后点“确认这个姿势”。`.replace('${n}',ok)}}catch(e){}busy=false}
+  requestAnimationFrame(tick)};
+ btn.addEventListener('click',async()=>{if(on){stop();useDoll();run();return}
+  try{$('status').textContent='正在打开摄像头…';if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('no');
+   stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});vid.srcObject=stream;await vid.play();await loadModel();
+   on=true;mode='photo';$('photo').hidden=false;doll.style.display='none';document.querySelector('#emb [data-in=doll]').setAttribute('aria-pressed','false');btn.textContent='关闭摄像头';btn.setAttribute('aria-pressed','true');okb.hidden=false;tick();
+  }catch(e){stop();$('status').textContent='无法打开摄像头：浏览器没有给权限，或当前页面不允许使用摄像头（Claude 里的预览不允许）。请用下载到电脑上的版本，或改用照片和木偶。'}});}
+drawDoll();run();
+}
+</script>
+</body>
+</html>
