@@ -9,6 +9,7 @@
 }
 
 .lb-jump { color: var(--ink); text-underline-offset: 4px; }
+.r .lb-jump { display: block; margin-top: .3rem; }
 .lb-board {
   color-scheme: dark;
   background: var(--lb-ground);
@@ -60,13 +61,18 @@
 .lb-picker[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--lb-accent); }
 .lb-picker-image, .lb-plate-image {
   position: relative;
-  display: grid;
-  place-items: center;
+  overflow: hidden;
   background: #0e0d0c;
 }
 .lb-picker-image { width: 100%; height: clamp(100px, 15vw, 175px); }
-.lb-board img { display: block; max-width: 100%; }
-.lb-picker img { width: 100%; height: 100%; object-fit: contain; }
+.lb-board img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .lb-id {
   position: absolute;
   inset: 7px auto auto 7px;
@@ -108,7 +114,6 @@
 .lb-plate { background: #25211d; border: 1px solid var(--lb-border); }
 .lb-workspace:not([data-view]) .lb-plate { max-width: 31rem; }
 .lb-plate-image { height: clamp(180px, 26vw, 320px); }
-.lb-plate-image img { width: 100%; height: 100%; object-fit: contain; }
 .lb-plate figcaption { padding: clamp(.8rem, 2vw, 1.25rem); }
 .lb-plate h3, .lb-reading h4 { font: 400 clamp(1.25rem, 2.5vw, 1.65rem)/1.2 Georgia, "Songti SC", serif; }
 .lb-plate :is(p, a) { margin-top: .55rem; }
