@@ -1,0 +1,150 @@
+/* The relationship workspace follows the Atlas's dark image board. */
+#layer-b {
+  --lb-ground: #181715;
+  --lb-border: #53493d;
+  --lb-text: #f1e9dd;
+  --lb-muted: #d1c2af;
+  --lb-accent: #eed0a4;
+  scroll-margin-top: 12px;
+}
+
+.lb-jump { color: var(--ink); text-underline-offset: 4px; }
+.lb-board {
+  color-scheme: dark;
+  background: var(--lb-ground);
+  color: var(--lb-text);
+  padding: clamp(16px, 4vw, 42px);
+  border: 1px solid var(--lb-border);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.lb-board [hidden] { display: none; }
+.lb-board :is(button, a, summary, h2):focus-visible {
+  outline: 2px solid var(--lb-accent);
+  outline-offset: 4px;
+}
+.lb-board a { color: var(--lb-accent); text-underline-offset: 3px; }
+.lb-board button { font: inherit; color: inherit; cursor: pointer; }
+.lb-board :is(p, figure, h3, h4, h5) { margin: 0; }
+.lb-board .lb-kicker {
+  color: var(--lb-accent);
+  font-size: .875rem;
+  letter-spacing: .06em;
+}
+.lb-board h2 {
+  margin: .2em 0 .3em;
+  font: 400 clamp(1.9rem, 5vw, 3.8rem)/1.04 Georgia, "Songti SC", serif;
+  letter-spacing: -.025em;
+}
+.lb-intro { max-width: 55rem; }
+.lb-board .lb-scope {
+  color: var(--lb-muted);
+  margin-top: .5rem;
+}
+.lb-shelf {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(8px, 1.6vw, 20px);
+  margin: 1.5rem 0 1.15rem;
+}
+.lb-picker {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  text-align: start;
+  border: 1px solid var(--lb-border);
+  background: #24201c;
+}
+.lb-picker:hover, .lb-picker[aria-pressed="true"] { border-color: var(--lb-accent); }
+.lb-picker[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--lb-accent); }
+.lb-picker-image, .lb-plate-image {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: #0e0d0c;
+}
+.lb-picker-image { width: 100%; height: clamp(100px, 15vw, 175px); }
+.lb-board img { display: block; max-width: 100%; }
+.lb-picker img { width: 100%; height: 100%; object-fit: contain; }
+.lb-id {
+  position: absolute;
+  inset: 7px auto auto 7px;
+  padding: 0 .42rem;
+  color: var(--lb-text);
+  background: #11100fee;
+  font-size: .875rem;
+}
+.lb-picker-title { display: block; padding: .6rem; line-height: 1.3; }
+.lb-picker-title span { display: block; color: var(--lb-muted); font-size: .875rem; margin-top: .2rem; }
+.lb-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.lb-controls button, .lb-board .lb-recenter {
+  min-height: 44px;
+  padding: .5rem .7rem;
+  background: #25211d;
+  border: 1px solid var(--lb-border);
+  text-align: start;
+}
+.lb-controls button small { display: block; font-size: .875rem; }
+.lb-controls button:hover, .lb-board .lb-recenter:hover { border-color: var(--lb-accent); }
+.lb-controls button[aria-pressed="true"] {
+  background: var(--lb-accent);
+  color: #251c13;
+  border-color: var(--lb-accent);
+}
+.lb-workspace { border-top: 1px solid var(--lb-border); padding-top: 1rem; }
+.lb-composition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 52px);
+  align-items: start;
+}
+.lb-workspace[data-view] .lb-composition { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.lb-plate { background: #25211d; border: 1px solid var(--lb-border); }
+.lb-workspace:not([data-view]) .lb-plate { max-width: 31rem; }
+.lb-plate-image { height: clamp(180px, 26vw, 320px); }
+.lb-plate-image img { width: 100%; height: 100%; object-fit: contain; }
+.lb-plate figcaption { padding: clamp(.8rem, 2vw, 1.25rem); }
+.lb-plate h3, .lb-reading h4 { font: 400 clamp(1.25rem, 2.5vw, 1.65rem)/1.2 Georgia, "Songti SC", serif; }
+.lb-plate :is(p, a) { margin-top: .55rem; }
+.lb-plate a { display: inline-block; }
+.lb-plate-role, .lb-meta { color: var(--lb-muted); font-size: .875rem; }
+.lb-plate-role { display: block; margin-bottom: .4rem; }
+.lb-related { position: relative; }
+.lb-related > .lb-kicker { margin-bottom: .55rem; }
+.lb-related > .lb-evidence, .lb-related > p:last-child { margin-top: .75rem; }
+/* Dotted/dashed visual comparisons. Missing transmission evidence has no connector. */
+.lb-workspace:is([data-view="motif"], [data-view="transformation"]) .lb-related:has(.lb-plate)::before {
+  content: "";
+  position: absolute;
+  top: 7rem;
+  right: 100%;
+  width: clamp(20px, 4vw, 52px);
+  border-top: 2px dotted var(--lb-accent);
+}
+.lb-workspace[data-view="transformation"] .lb-related:has(.lb-plate)::before { border-top-style: dashed; }
+.lb-reading { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--lb-border); }
+.lb-reading :is(h4, h5, p, button) { margin-top: .55rem; }
+.lb-reading h5 { font-size: .95rem; }
+.lb-evidence { color: var(--lb-accent); font-size: .875rem; font-weight: 700; }
+.lb-reading details { border: 0; margin: .5rem 0; padding: 0; }
+.lb-reading ul { padding-inline-start: 1.5rem; margin-top: 0; }
+.lb-reading summary { color: var(--lb-muted); display: revert; padding: .65rem 0; }
+@media (max-width: 700px) {
+  .lb-shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lb-workspace[data-view] .lb-composition { grid-template-columns: minmax(0, 1fr); }
+  .lb-workspace:is([data-view="motif"], [data-view="transformation"]) .lb-related:has(.lb-plate)::before {
+    top: -20px;
+    left: 50%;
+    width: 0;
+    height: 20px;
+    border-left: 2px dashed var(--lb-accent);
+    border-top: 0;
+  }
+  .lb-workspace[data-view="motif"] .lb-related:has(.lb-plate)::before { border-left-style: dotted; }
+}

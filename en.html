@@ -94,6 +94,9 @@ input[type=file]{position:absolute;opacity:0;width:1px;height:1px}
 .lang{position:absolute;top:clamp(14px,2.4vw,26px);right:max(5vw,16px);display:flex;gap:2px;font:700 13px "Courier Prime","Noto Serif SC",monospace}.lang a{display:inline-flex;align-items:center;min-height:36px;padding:0 10px;border:1px solid var(--rule);color:var(--ink);text-decoration:none}.lang a[aria-current]{background:var(--ink);color:var(--bg);border-color:var(--ink)}header.band{position:relative}h1{padding-right:120px}
 input[type=checkbox]{accent-color:#4a90e2}
 </style>
+<link rel="stylesheet" href="layer-b.css">
+<script defer src="layer-b-data.js"></script>
+<script defer src="layer-b.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 </head>
 <body>
@@ -102,6 +105,7 @@ input[type=checkbox]{accent-color:#4a90e2}
   <h1>The Imagining Body: Aposkopein and the Invisible</h1>
   <p class="lead">Imagination is seeing the invisible. This page compares the poses of 16 figures who “see”, centred on the shading gesture (<span class="de">aposkopein</span>): the hand raised to the brow against the light. <strong>Preliminary finding:</strong> Pure formulas (satyr, Rembrandt) and witnesses in vision scenes (Brother Leo, shepherds, apostle) have almost identical skeletons — elbow 41–66°, hand above the brow; “what was seen” can only be supplied by iconographic context.</p>
   <p class="m">16 figures · annotated once by hand · preliminary results · body search further down the page</p>
+  <p><a class="lb-jump" href="#layer-b">Layer B · Iconographic Relationships</a></p>
 </header>
 
 <section class="band">
@@ -135,6 +139,23 @@ input[type=checkbox]{accent-color:#4a90e2}
     <div class="res" id="res"></div>
   </div>
 </div>
+</section>
+<section class="band" id="layer-b" aria-labelledby="lb-title">
+  <div class="lb-board">
+    <p class="lb-kicker">Layer B</p>
+    <h2 id="lb-title" tabindex="-1">Iconographic Relationships</h2>
+    <p class="lb-intro">In these painted visions, figures raise a hand to the brow before an apparition beyond ordinary sight. Explore how this gesture of looking, Aposkopein, works across four narrative scenes (03–06).</p>
+    <p class="lb-scope">01, the satyr, and 02, Rembrandt’s old man, are formal references. What they see remains unverified. The core study starts with 03–06.</p>
+    <div class="lb-shelf" data-lb-slot="picker" role="group" aria-label="Four works depicting divine visions"></div>
+    <p data-lb-slot="prompt"></p>
+    <div class="lb-workspace" data-lb-slot="workspace" hidden>
+      <div class="lb-controls" data-lb-slot="views" role="group"></div>
+      <div class="lb-composition">
+        <div data-lb-slot="anchor"></div>
+        <div class="lb-related" id="lb-relation" data-lb-slot="relation" aria-live="polite" hidden></div>
+      </div>
+    </div>
+  </div>
 </section>
 <section class="band">
 <details><summary>Data and method</summary>
@@ -282,6 +303,7 @@ const showTag=d=>{const id=d.id,lk=links.filter(l=>(l.target.id||l.target)===id|
 const showCard=n=>{const x=W.find(w=>w.n===n),r=R[x.k],a=x.ann;
  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.dataset.n===n));
  cardEl.innerHTML=`<h3><span style="color:var(--red)">${x.n}</span> ${x.a}, ${x.t}</h3><p class="m" style="margin:2px 0 0">${x.d} · measured: ${r.fig} · ${a.st} · selected via: ${a.route} · <a href="${x.url}" style="color:inherit">Original image</a></p>
+ ${x.n >= 3 && x.n <= 6 ? `<a class="lb-jump" href="#layer-b" data-layer-b-work="0${x.n}">Explore in Layer B</a>` : ''}
  <div class="cols">
  <div><h4>Form</h4><p>${HB[x.bin]}</p><p class="m">Elbow ${f0(r.elbow)} · hand–eye distance ${f2(r.hand_eye)} · wrist above eye ${f2(r.wrist_above_eye)}</p></div>
  <div><h4>Iconography</h4><p>${a.ic} ${IC[a.ic]}</p><p class="m">The invisible: ${a.obj}<br>How it arrives: ${MODE[a.mode][0]} · eyes: ${a.eye}</p></div>
@@ -467,7 +489,7 @@ const run=()=>{const kp=mode==='doll'?toKP(Q):photoKP;if(!kp)return;const v=vecO
  const top=sc.slice(0,6);const modes={};top.slice(0,3).forEach(r=>{const m=MODE[r.x.a2.mode][0];modes[m]=(modes[m]||0)+1});const dom=Object.entries(modes).sort((a,b)=>b[1]-a[1])[0];
  $('me').innerHTML=`${skSvg(v)}<div><strong>Your pose: ${HB(f)}</strong><p class="m" style="margin:2px 0">Elbow ${f.elbow==null?'—':Math.round(f.elbow)+'°'} · hand–eye distance ${f.hand_eye==null?'—':f.hand_eye.toFixed(2)} · wrist above eye ${f.wrist_above_eye==null?'—':f.wrist_above_eye.toFixed(2)}</p><p style="margin:0;font-size:14.5px">${dom?`In the archive, the three figures closest to you mostly belong to “${dom[0]}”.`:''}</p></div>`;
  const max=Math.max(...top.map(r=>r.d),1);
- $('res').innerHTML=top.map((r,i)=>{const x=r.x;return `<div class="r"><div class="pic"><img src="img/${x.k}.jpg" alt="">${skSvg(x.p.vec)}</div><div><h3><b>${x.n}</b> ${x.a}, ${x.t}</h3><div class="meter" title="Similarity"><i style="width:${Math.max(6,100-r.d/max*85)}%"></i></div><p>The invisible: ${x.a2.obj}</p><p class="m">${MODE[x.a2.mode][0]} · ${HB(x.p.f)}</p><button class="use" data-k="${x.k}">Use this pose</button></div></div>`}).join('');
+ $('res').innerHTML=top.map((r,i)=>{const x=r.x;return `<div class="r"><div class="pic"><img src="img/${x.k}.jpg" alt="">${skSvg(x.p.vec)}</div><div><h3><b>${x.n}</b> ${x.a}, ${x.t}</h3><div class="meter" title="Similarity"><i style="width:${Math.max(6,100-r.d/max*85)}%"></i></div><p>The invisible: ${x.a2.obj}</p><p class="m">${MODE[x.a2.mode][0]} · ${HB(x.p.f)}</p><button class="use" data-k="${x.k}">Use this pose</button> ${x.n >= 3 && x.n <= 6 ? `<a class="lb-jump" href="#layer-b" data-layer-b-work="0${x.n}">Explore in Layer B</a>` : ''}</div></div>`}).join('');
  $('res').querySelectorAll('.use').forEach(b=>b.addEventListener('click',()=>loadArchive(b.dataset.k)));};
 // load an archive pose onto the doll (fit into the 300×400 box)
 const loadArchive=k=>{const kp=POSE[k].kp;const pts=kp.filter(Boolean);const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);const s=Math.min(240/(x1-x0||1),340/(y1-y0||1));

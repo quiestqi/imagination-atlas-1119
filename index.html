@@ -94,6 +94,9 @@ input[type=file]{position:absolute;opacity:0;width:1px;height:1px}
 .lang{position:absolute;top:clamp(14px,2.4vw,26px);right:max(5vw,16px);display:flex;gap:2px;font:700 13px "Courier Prime","Noto Serif SC",monospace}.lang a{display:inline-flex;align-items:center;min-height:36px;padding:0 10px;border:1px solid var(--rule);color:var(--ink);text-decoration:none}.lang a[aria-current]{background:var(--ink);color:var(--bg);border-color:var(--ink)}header.band{position:relative}h1{padding-right:120px}
 input[type=checkbox]{accent-color:#4a90e2}
 </style>
+<link rel="stylesheet" href="layer-b.css">
+<script defer src="layer-b-data.js"></script>
+<script defer src="layer-b.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 </head>
 <body>
@@ -102,6 +105,7 @@ input[type=checkbox]{accent-color:#4a90e2}
   <h1>想象的身体：远眺与不可见之物</h1>
   <p class="lead">想象即看见不可见之物。这里比较 16 个“看见”的人物的姿势，核心是远眺（<span class="de">aposkopein</span>）：手举到额前遮光。<strong>初步发现：</strong>纯程式（萨提尔、伦勃朗）与异象场景中的目击者（利奥修士、牧人、使徒）骨架几乎相同，肘角 41–66°、手在眉上；“看见了什么”只能由图像学语境给出。</p>
   <p class="m">16 个人物 · 人工标注一次 · 初步结果 · 页面下方可用身体检索</p>
+  <p><a class="lb-jump" href="#layer-b">Layer B · 图像学关系</a></p>
 </header>
 
 <section class="band">
@@ -135,6 +139,23 @@ input[type=checkbox]{accent-color:#4a90e2}
     <div class="res" id="res"></div>
   </div>
 </div>
+</section>
+<section class="band" id="layer-b" aria-labelledby="lb-title">
+  <div class="lb-board">
+    <p class="lb-kicker">Layer B</p>
+    <h2 id="lb-title" tabindex="-1">图像学关系</h2>
+    <p class="lb-intro">在绘画所构成的异象中，人物举手遮额，面向日常经验中不可见的神圣显现。这里用 03–06 的作品局部，比较这个远眺姿势（Aposkopein）在不同叙事中的作用。</p>
+    <p class="lb-scope">01 萨提尔与 02 伦勃朗老人是形式参照。两者所望之物未确证，核心演示从 03–06 展开。</p>
+    <div class="lb-shelf" data-lb-slot="picker" role="group" aria-label="四幅神圣异象作品"></div>
+    <p data-lb-slot="prompt"></p>
+    <div class="lb-workspace" data-lb-slot="workspace" hidden>
+      <div class="lb-controls" data-lb-slot="views" role="group"></div>
+      <div class="lb-composition">
+        <div data-lb-slot="anchor"></div>
+        <div class="lb-related" id="lb-relation" data-lb-slot="relation" aria-live="polite" hidden></div>
+      </div>
+    </div>
+  </div>
 </section>
 <section class="band">
 <details><summary>数据与方法</summary>
@@ -282,6 +303,7 @@ const showTag=d=>{const id=d.id,lk=links.filter(l=>(l.target.id||l.target)===id|
 const showCard=n=>{const x=W.find(w=>w.n===n),r=R[x.k],a=x.ann;
  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.dataset.n===n));
  cardEl.innerHTML=`<h3><span style="color:var(--red)">${x.n}</span>　${x.a}《${x.t}》</h3><p class="m" style="margin:2px 0 0">${x.d} · 测量：${r.fig} · ${a.st} · 入选：${a.route} · <a href="${x.url}" style="color:inherit">原图</a></p>
+ ${x.n >= 3 && x.n <= 6 ? `<a class="lb-jump" href="#layer-b" data-layer-b-work="0${x.n}">在 Layer B 中查看</a>` : ''}
  <div class="cols">
  <div><h4>形态</h4><p>${HB[x.bin]}</p><p class="m">肘角 ${f0(r.elbow)} · 手眼距离 ${f2(r.hand_eye)} · 手腕高出眼睛 ${f2(r.wrist_above_eye)}</p></div>
  <div><h4>图像学</h4><p>${a.ic}　${IC[a.ic]}</p><p class="m">不可见之物：${a.obj}<br>如何到达：${MODE[a.mode][0]} · 眼睛：${a.eye}</p></div>
@@ -467,7 +489,7 @@ const run=()=>{const kp=mode==='doll'?toKP(Q):photoKP;if(!kp)return;const v=vecO
  const top=sc.slice(0,6);const modes={};top.slice(0,3).forEach(r=>{const m=MODE[r.x.a2.mode][0];modes[m]=(modes[m]||0)+1});const dom=Object.entries(modes).sort((a,b)=>b[1]-a[1])[0];
  $('me').innerHTML=`${skSvg(v)}<div><strong>你的姿势：${HB(f)}</strong><p class="m" style="margin:2px 0">肘角 ${f.elbow==null?'—':Math.round(f.elbow)+'°'} · 手眼距离 ${f.hand_eye==null?'—':f.hand_eye.toFixed(2)} · 手腕高出眼睛 ${f.wrist_above_eye==null?'—':f.wrist_above_eye.toFixed(2)}</p><p style="margin:0;font-size:14.5px">${dom?`在档案里，最像你的三个人物多半属于“${dom[0]}”。`:''}</p></div>`;
  const max=Math.max(...top.map(r=>r.d),1);
- $('res').innerHTML=top.map((r,i)=>{const x=r.x;return `<div class="r"><div class="pic"><img src="img/${x.k}.jpg" alt="">${skSvg(x.p.vec)}</div><div><h3><b>${x.n}</b> ${x.a}《${x.t}》</h3><div class="meter" title="相似度"><i style="width:${Math.max(6,100-r.d/max*85)}%"></i></div><p>不可见之物：${x.a2.obj}</p><p class="m">${MODE[x.a2.mode][0]} · ${HB(x.p.f)}</p><button class="use" data-k="${x.k}">用这个姿势</button></div></div>`}).join('');
+ $('res').innerHTML=top.map((r,i)=>{const x=r.x;return `<div class="r"><div class="pic"><img src="img/${x.k}.jpg" alt="">${skSvg(x.p.vec)}</div><div><h3><b>${x.n}</b> ${x.a}《${x.t}》</h3><div class="meter" title="相似度"><i style="width:${Math.max(6,100-r.d/max*85)}%"></i></div><p>不可见之物：${x.a2.obj}</p><p class="m">${MODE[x.a2.mode][0]} · ${HB(x.p.f)}</p><button class="use" data-k="${x.k}">用这个姿势</button> ${x.n >= 3 && x.n <= 6 ? `<a class="lb-jump" href="#layer-b" data-layer-b-work="0${x.n}">在 Layer B 中查看</a>` : ''}</div></div>`}).join('');
  $('res').querySelectorAll('.use').forEach(b=>b.addEventListener('click',()=>loadArchive(b.dataset.k)));};
 // load an archive pose onto the doll (fit into the 300×400 box)
 const loadArchive=k=>{const kp=POSE[k].kp;const pts=kp.filter(Boolean);const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);const s=Math.min(240/(x1-x0||1),340/(y1-y0||1));
